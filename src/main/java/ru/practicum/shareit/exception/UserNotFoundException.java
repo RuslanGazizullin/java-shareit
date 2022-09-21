@@ -1,6 +1,6 @@
 package ru.practicum.shareit.exception;
 
-public class UserNotFoundException extends Exception{
+public class UserNotFoundException extends Exception {
     public UserNotFoundException(String message) {
         super(message);
     }
