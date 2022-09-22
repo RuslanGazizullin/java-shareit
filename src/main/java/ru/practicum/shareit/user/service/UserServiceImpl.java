@@ -1,10 +1,6 @@
 package ru.practicum.shareit.user.service;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.DuplicateEmailException;
-import ru.practicum.shareit.exception.InvalidEmailException;
-import ru.practicum.shareit.exception.NoEmailException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
@@ -19,13 +15,11 @@ public class UserServiceImpl implements UserService {
         this.userStorage = userStorage;
     }
 
-    public User add(User user) throws ValidationException, DuplicateEmailException, NoEmailException,
-            InvalidEmailException {
+    public User add(User user) {
         return userStorage.add(user);
     }
 
-    public User update(User user, Long id) throws ValidationException, NoEmailException, DuplicateEmailException,
-            InvalidEmailException {
+    public User update(User user, Long id) {
         return userStorage.update(user, id);
     }
 
@@ -33,11 +27,11 @@ public class UserServiceImpl implements UserService {
         return userStorage.findAll();
     }
 
-    public User findById(Long id) throws ValidationException {
+    public User findById(Long id) {
         return userStorage.findById(id);
     }
 
-    public void delete(Long id) throws ValidationException {
+    public void delete(Long id) {
         userStorage.delete(id);
     }
 }

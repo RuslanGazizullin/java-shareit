@@ -2,23 +2,21 @@ package ru.practicum.shareit.user.validation;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.DuplicateEmailException;
-import ru.practicum.shareit.exception.InvalidEmailException;
-import ru.practicum.shareit.exception.NoEmailException;
-import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.exception.UserValidationException;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class UserValidation {
 
-    public void emailValidation(User user) throws InvalidEmailException {
+    public void emailValidation(User user) {
         if (!user.getEmail().contains("@")) {
-            throw new InvalidEmailException("Неверный формат email");
+            throw new UserValidationException("Неверный формат email");
         }
     }
 
-    public void duplicateEmailValidation(HashMap<Long, User> users, User user) throws DuplicateEmailException {
+    public void duplicateEmailValidation(Map<Long, User> users, User user) {
         for (User oneUser : users.values()) {
             if (oneUser.getEmail().equals(user.getEmail())) {
                 throw new DuplicateEmailException("Пользователь с таким email уже существует");
@@ -26,26 +24,25 @@ public class UserValidation {
         }
     }
 
-    public void noEmailValidation(User user) throws NoEmailException {
+    public void noEmailValidation(User user) {
         if (user.getEmail() == null) {
-            throw new NoEmailException("Электронная почта отсутствует");
+            throw new UserValidationException("Электронная почта отсутствует");
         }
     }
 
-    public void nameValidation(User user) throws ValidationException {
+    public void nameValidation(User user) {
         if (user.getName().isBlank()) {
-            throw new ValidationException("Отсутствует имя пользователя");
+            throw new UserValidationException("Отсутствует имя пользователя");
         }
     }
 
-    public void idValidation(HashMap<Long, User> users, Long id) throws ValidationException {
+    public void idValidation(Map<Long, User> users, Long id) {
         if (!users.containsKey(id)) {
-            throw new ValidationException("Пользователь с таким id не существует");
+            throw new UserValidationException("Пользователь с таким id не существует");
         }
     }
 
-    public void userValidation(HashMap<Long, User> users, User user) throws ValidationException,
-            DuplicateEmailException, NoEmailException, InvalidEmailException {
+    public void userValidation(Map<Long, User> users, User user) {
         noEmailValidation(user);
         emailValidation(user);
         duplicateEmailValidation(users, user);

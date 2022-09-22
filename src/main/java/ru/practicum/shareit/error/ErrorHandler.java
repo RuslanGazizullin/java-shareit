@@ -13,8 +13,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidation(final ValidationException e) {
-        log.warn("Валидация не пройдена");
+    public ErrorResponse handleUserValidation(final UserValidationException e) {
+        log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
@@ -28,63 +28,28 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleDuplicateEmail(final DuplicateEmailException e) {
-        log.warn("Пользователь с таким email уже существует");
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleNoEmail(final NoEmailException e) {
-        log.warn("Электронная почта отсутствует");
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleInvalidEmail(final InvalidEmailException e) {
-        log.warn("Неверный формат email");
+        log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleItemWithoutUserId(final ItemWithoutUserIdException e) {
-        log.warn("Не указан хозяин вещи");
+        log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFound(final UserNotFoundException e) {
-        log.warn("Пользователь не найден");
+    public ErrorResponse handleItemOwnerValidation(final ItemOwnerValidationException e) {
+        log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleNoAvailable(final AvailableException e) {
-        log.warn("Не указана доступность вещи");
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleEmptyItemName(final EmptyItemNameException e) {
-        log.warn("Не указано название вещи");
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleEmptyItemDescription(final EmptyItemDescriptionException e) {
-        log.warn("Не указано описание вещи");
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleWrongUser(final WrongOwnerException e) {
-        log.warn("Пользователь не является хозяином");
-        return new ErrorResponse(e.getMessage());
+    public ErrorResponse handleItemRequestValidation(final ItemRequestValidationException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse((e.getMessage()));
     }
 }

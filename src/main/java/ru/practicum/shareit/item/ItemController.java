@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -11,6 +10,8 @@ import java.util.List;
 @RequestMapping("/items")
 public class ItemController {
 
+    final String USER_ID = "X-Sharer-User-Id";
+
     private final ItemService itemService;
 
     public ItemController(ItemService itemService) {
@@ -18,17 +19,12 @@ public class ItemController {
     }
 
     @PostMapping()
-    public ItemDto add(@RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Long userId)
-            throws ItemWithoutUserIdException, UserNotFoundException, AvailableException, EmptyItemNameException,
-            EmptyItemDescriptionException {
+    public ItemDto add(@RequestBody ItemDto itemDto, @RequestHeader(USER_ID) Long userId) {
         return itemService.add(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestBody ItemDto itemDto, @PathVariable Long itemId,
-                          @RequestHeader("X-Sharer-User-Id") Long userId) throws UserNotFoundException,
-            ItemWithoutUserIdException, EmptyItemNameException, WrongOwnerException, AvailableException,
-            EmptyItemDescriptionException {
+    public ItemDto update(@RequestBody ItemDto itemDto, @PathVariable Long itemId, @RequestHeader(USER_ID) Long userId) {
         return itemService.update(itemDto, itemId, userId);
     }
 
@@ -38,7 +34,7 @@ public class ItemController {
     }
 
     @GetMapping()
-    public List<ItemDto> findAllByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> findAllByOwner(@RequestHeader(USER_ID) Long userId) {
         return itemService.findAllByOwner(userId);
     }
 

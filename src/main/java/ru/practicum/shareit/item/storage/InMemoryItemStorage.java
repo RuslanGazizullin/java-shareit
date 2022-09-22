@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.validation.ItemValidation;
 
@@ -28,8 +27,7 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Item add(Item item, Long userId) throws ItemWithoutUserIdException, UserNotFoundException, AvailableException,
-            EmptyItemNameException, EmptyItemDescriptionException {
+    public Item add(Item item, Long userId) {
         itemValidation.itemValidation(item, userId);
         item.setId(generateId());
         item.setOwner(userId);
@@ -39,8 +37,7 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     @Override
-    public Item update(Item item, Long itemId, Long userId) throws WrongOwnerException, UserNotFoundException,
-            ItemWithoutUserIdException, EmptyItemNameException, AvailableException, EmptyItemDescriptionException {
+    public Item update(Item item, Long itemId, Long userId) {
         itemValidation.wrongOwnerValidation(items, itemId, userId);
         Item updatedItem = items.get(itemId);
         if (item.getName() != null) {

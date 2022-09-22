@@ -2,22 +2,19 @@ package ru.practicum.shareit.user.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exception.DuplicateEmailException;
-import ru.practicum.shareit.exception.InvalidEmailException;
-import ru.practicum.shareit.exception.NoEmailException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.validation.UserValidation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
 
-    private final HashMap<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
     private Long id = 1L;
 
     private final UserValidation userValidation;
@@ -31,8 +28,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User add(User user) throws ValidationException, DuplicateEmailException, NoEmailException,
-            InvalidEmailException {
+    public User add(User user) {
         userValidation.userValidation(users, user);
         Long id = generateId();
         user.setId(id);
@@ -42,7 +38,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user, Long id) throws ValidationException, DuplicateEmailException {
+    public User update(User user, Long id) {
         userValidation.idValidation(users, id);
         if (user.getEmail() != null) {
             userValidation.duplicateEmailValidation(users, user);
@@ -72,20 +68,20 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findById(Long id) throws ValidationException {
+    public User findById(Long id) {
         userValidation.idValidation(users, id);
         log.info("Пользователь найден");
         return users.get(id);
     }
 
     @Override
-    public void delete(Long id) throws ValidationException {
+    public void delete(Long id) {
         userValidation.idValidation(users, id);
         users.remove(id);
     }
 
     @Override
-    public HashMap<Long, User> getUsers() {
+    public Map<Long, User> getUsers() {
         return users;
     }
 }

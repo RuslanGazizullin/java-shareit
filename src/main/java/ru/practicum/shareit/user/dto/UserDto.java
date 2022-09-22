@@ -6,8 +6,8 @@ import javax.validation.constraints.Email;
 
 @Data
 public class UserDto {
-    final Long id;
-    final String name;
+    private final Long id;
+    private final String name;
     @Email
-    final String email;
+    private final String email;
 }
