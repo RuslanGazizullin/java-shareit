@@ -29,7 +29,7 @@ public class ItemValidation {
     }
 
     public void availableValidation(Item item) {
-        if (item.getAvailable() == null) {
+        if (item.getIsAvailable() == null) {
             throw new ItemRequestValidationException("Не указана доступность вещи");
         }
     }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
-import ru.practicum.shareit.requests.model.ItemRequest;
 
 @Data
 public class ItemDto {
@@ -10,14 +9,14 @@ public class ItemDto {
     private String description;
     private Boolean available;
     private Long owner;
-    private ItemRequest request;
+    private Long requestId;
 
-    public ItemDto(Long id, String name, String description, Boolean available, Long owner, ItemRequest request) {
+    public ItemDto(Long id, String name, String description, Boolean available, Long owner, Long requestId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.available = available;
         this.owner = owner;
-        this.request = request;
+        this.requestId = requestId;
     }
 }
