@@ -93,14 +93,14 @@ public class BookingValidation {
         }
     }
 
-    public void approveStatusValidation(Long bookingId){
-        if (bookingRepository.findById(bookingId).get().getStatus().equals(BookingStatus.APPROVED)){
+    public void approveStatusValidation(Long bookingId) {
+        if (bookingRepository.findById(bookingId).get().getStatus().equals(BookingStatus.APPROVED)) {
             throw new BookingValidationException("Бронирование уже подтверждено");
         }
     }
 
-    public void ownerCreateBookingValidation(Booking booking, Long userId){
-        if (itemRepository.findById(booking.getItemId()).get().getOwner().equals(userId)){
+    public void ownerCreateBookingValidation(Booking booking, Long userId) {
+        if (itemRepository.findById(booking.getItemId()).get().getOwner().equals(userId)) {
             throw new UserNotFoundException("Хозяин не может забронировать свою вещь");
         }
     }
