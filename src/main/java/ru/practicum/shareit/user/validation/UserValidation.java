@@ -2,13 +2,21 @@ package ru.practicum.shareit.user.validation;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.DuplicateEmailException;
+import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.exception.UserValidationException;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Map;
 
 @Component
 public class UserValidation {
+
+    private final UserRepository userRepository;
+
+    public UserValidation(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public void emailValidation(User user) {
         if (!user.getEmail().contains("@")) {
@@ -42,10 +50,21 @@ public class UserValidation {
         }
     }
 
+    public void idDbValidation(Long id) {
+        if (userRepository.findById(id).isEmpty()) {
+            throw new UserNotFoundException("Пользователь с таким id не существует");
+        }
+    }
+
     public void userValidation(Map<Long, User> users, User user) {
         noEmailValidation(user);
         emailValidation(user);
         duplicateEmailValidation(users, user);
         nameValidation(user);
+    }
+
+    public void userDbValidation(User user) {
+        noEmailValidation(user);
+        emailValidation(user);
     }
 }

@@ -57,6 +57,7 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public Item findById(Long itemId) {
+        log.info("Данные о вещи успешно получены");
         return items.get(itemId);
     }
 

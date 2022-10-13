@@ -41,7 +41,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleItemOwnerValidation(final ItemOwnerValidationException e) {
+    public ErrorResponse handleUserNotFound(final UserNotFoundException e) {
         log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
@@ -49,6 +49,34 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleItemRequestValidation(final ItemRequestValidationException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse((e.getMessage()));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleItemNotFound(final ItemNotFoundException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse((e.getMessage()));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingValidation(final BookingValidationException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse((e.getMessage()));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingNotFound(final BookingNotFoundException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse((e.getMessage()));
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleCommentValidation(final CommentValidationException e) {
         log.warn(e.getMessage());
         return new ErrorResponse((e.getMessage()));
     }
