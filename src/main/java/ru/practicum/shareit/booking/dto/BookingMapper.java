@@ -17,13 +17,13 @@ public class BookingMapper {
     }
 
     public BookingDto toBookingDto(Booking booking) {
-        return new BookingDto(
-                booking.getId(),
-                booking.getStart(),
-                booking.getEnd(),
-                booking.getStatus(),
-                userRepository.findById(booking.getBookerId()).get(),
-                itemRepository.findById(booking.getItemId()).get()
-        );
+        return BookingDto.builder()
+                .id(booking.getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .status(booking.getStatus())
+                .booker(userRepository.findById(booking.getBookerId()).get())
+                .item(itemRepository.findById(booking.getItemId()).get())
+                .build();
     }
 }

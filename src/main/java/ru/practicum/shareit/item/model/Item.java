@@ -1,10 +1,12 @@
 package ru.practicum.shareit.item.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
 
 @Data
+@Builder
 @Entity
 @Table(name = "items")
 public class Item {

@@ -9,7 +9,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.validation.BookingValidation;
 import ru.practicum.shareit.exception.BookingValidationException;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 
 import java.time.LocalDateTime;
@@ -26,7 +25,8 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final ItemRepository itemRepository;
 
-    public BookingServiceImpl(BookingRepository bookingRepository, BookingValidation bookingValidation, BookingMapper bookingMapper, ItemRepository itemRepository) {
+    public BookingServiceImpl(BookingRepository bookingRepository, BookingValidation bookingValidation,
+                              BookingMapper bookingMapper, ItemRepository itemRepository) {
         this.bookingRepository = bookingRepository;
         this.bookingValidation = bookingValidation;
         this.bookingMapper = bookingMapper;
@@ -71,43 +71,23 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> findAllByBooker(Long bookerId, String bookingState) {
         bookingValidation.bookerIdValidation(bookerId);
         bookingValidation.bookingStateValidation(bookingState);
+        final LocalDateTime presentTime = LocalDateTime.now();
         log.info("Список бронирований успешно получен");
         switch (bookingState) {
             case "ALL":
-                return bookingRepository.findAllByBookerId(bookerId)
-                        .stream()
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId));
             case "FUTURE":
-                return bookingRepository.findAllByBookerId(bookerId)
-                        .stream()
-                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndStartAfter(bookerId, presentTime));
             case "PAST":
-                return bookingRepository.findAllByBookerId(bookerId)
-                        .stream()
-                        .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndEndBefore(bookerId, presentTime));
             case "CURRENT":
-                return bookingRepository.findAllByBookerId(bookerId)
-                        .stream()
-                        .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
-                        .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                return toBookingDtoSortedByTime(bookingRepository.
+                        findAllByBookerIdAndStartBeforeAndEndAfter(bookerId, presentTime, presentTime));
             default:
-                return bookingRepository.findAllByBookerId(bookerId)
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId)
                         .stream()
                         .filter(booking -> booking.getStatus().name().equals(bookingState))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
         }
     }
 
@@ -115,55 +95,48 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> findAllByOwner(Long ownerId, String bookingState) {
         bookingValidation.bookerIdValidation(ownerId);
         bookingValidation.bookingStateValidation(bookingState);
-        List<Long> itemsId = itemRepository.findAllByOwner(ownerId)
-                .stream()
-                .map(Item::getId)
-                .collect(Collectors.toList());
+        final LocalDateTime presentTime = LocalDateTime.now();
+        List<Long> itemsId = itemRepository.findAllIdByOwner(ownerId);
         if (itemsId.size() == 0) {
             throw new BookingValidationException("У владельца нет ни одной вещи");
         }
         log.info("Список бронирований успешно получен");
         switch (bookingState) {
             case "ALL":
-                return bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository.findAll()
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             case "FUTURE":
-                return bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository.findAllByStartAfter(presentTime)
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
-                        .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             case "PAST":
-                return bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository.findAllByEndBefore(presentTime)
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
-                        .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             case "CURRENT":
-                return bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository
+                        .findAllByStartBeforeAndEndAfter(presentTime, presentTime)
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
-                        .filter(booking -> booking.getStart().isBefore(LocalDateTime.now()))
-                        .filter(booking -> booking.getEnd().isAfter(LocalDateTime.now()))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             default:
-                return bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository.findAll()
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
                         .filter(booking -> booking.getStatus().name().equals(bookingState))
-                        .map(bookingMapper::toBookingDto)
-                        .sorted(Comparator.comparing(BookingDto::getStart).reversed())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
         }
+    }
+
+    private List<BookingDto> toBookingDtoSortedByTime(List<Booking> bookings) {
+        return bookings
+                .stream()
+                .map(bookingMapper::toBookingDto)
+                .sorted(Comparator.comparing(BookingDto::getStart).reversed())
+                .collect(Collectors.toList());
     }
 }

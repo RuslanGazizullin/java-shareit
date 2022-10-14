@@ -48,10 +48,11 @@ public class BookingValidation {
     }
 
     public void dateValidation(Booking booking) {
-        if (booking.getEnd().isBefore(LocalDateTime.now())) {
+        final LocalDateTime presentTime = LocalDateTime.now();
+        if (booking.getEnd().isBefore(presentTime)) {
             throw new BookingValidationException("Некорректная дата окончания");
         }
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
+        if (booking.getStart().isBefore(presentTime)) {
             throw new BookingValidationException("Некорректная дата начала");
         }
         if (booking.getEnd().isBefore(booking.getStart())) {
@@ -79,8 +80,9 @@ public class BookingValidation {
     }
 
     public void ownerOrBookerValidation(Long bookingId, Long userId) {
-        if (!bookingRepository.findById(bookingId).get().getBookerId().equals(userId) &&
-                !itemRepository.findById(bookingRepository.findById(bookingId).get().getItemId()).get().getOwner()
+        final Booking booking = bookingRepository.findById(bookingId).get();
+        if (!booking.getBookerId().equals(userId) &&
+                !itemRepository.findById(booking.getItemId()).get().getOwner()
                         .equals(userId)) {
             throw new UserNotFoundException("Пользователь не авляется ни хозяином, ни арендатором");
         }

@@ -26,86 +26,82 @@ public class ItemMapper {
     }
 
     public ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getIsAvailable(),
-                item.getOwner(),
-                item.getRequestId()
-        );
+        return ItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getIsAvailable())
+                .owner(item.getOwner())
+                .requestId(item.getRequestId())
+                .build();
     }
 
     public Item fromItemDto(ItemDto itemDto) {
-        return new Item(
-                itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                itemDto.getOwner(),
-                itemDto.getRequestId()
-        );
+        return Item.builder()
+                .id(itemDto.getId())
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .isAvailable(itemDto.getAvailable())
+                .owner(itemDto.getOwner())
+                .requestId(itemDto.getRequestId())
+                .build();
     }
 
     public ItemWithBookingDto toItemWithBookingDto(Item item, Long userId) {
         if (item.getOwner().equals(userId)) {
             if (lastBooking(item.getId()).size() > 0 && nextBooking(item.getId()).size() > 0) {
-                return new ItemWithBookingDto(
-                        item.getId(),
-                        item.getName(),
-                        item.getDescription(),
-                        item.getIsAvailable(),
-                        lastBooking(item.getId()).get(0),
-                        nextBooking(item.getId()).get(0),
-                        commentRepository.findAllByItemId(item.getId())
+                return ItemWithBookingDto.builder()
+                        .id(item.getId())
+                        .name(item.getName())
+                        .description(item.getDescription())
+                        .available(item.getIsAvailable())
+                        .lastBooking(lastBooking(item.getId()).get(0))
+                        .nextBooking(nextBooking(item.getId()).get(0))
+                        .comments(commentRepository.findAllByItemId(item.getId())
                                 .stream()
                                 .map(commentMapper::toCommentDto)
-                                .collect(Collectors.toList())
-                );
+                                .collect(Collectors.toList()))
+                        .build();
             } else {
-                return new ItemWithBookingDto(
-                        item.getId(),
-                        item.getName(),
-                        item.getDescription(),
-                        item.getIsAvailable(),
-                        null,
-                        null,
-                        commentRepository.findAllByItemId(item.getId())
+                return ItemWithBookingDto.builder()
+                        .id(item.getId())
+                        .name(item.getName())
+                        .description(item.getDescription())
+                        .available(item.getIsAvailable())
+                        .lastBooking(null)
+                        .nextBooking(null)
+                        .comments(commentRepository.findAllByItemId(item.getId())
                                 .stream()
                                 .map(commentMapper::toCommentDto)
-                                .collect(Collectors.toList())
-                );
+                                .collect(Collectors.toList()))
+                        .build();
             }
         } else {
-            return new ItemWithBookingDto(
-                    item.getId(),
-                    item.getName(),
-                    item.getDescription(),
-                    item.getIsAvailable(),
-                    null,
-                    null,
-                    commentRepository.findAllByItemId(item.getId())
+            return ItemWithBookingDto.builder()
+                    .id(item.getId())
+                    .name(item.getName())
+                    .description(item.getDescription())
+                    .available(item.getIsAvailable())
+                    .lastBooking(null)
+                    .nextBooking(null)
+                    .comments(commentRepository.findAllByItemId(item.getId())
                             .stream()
                             .map(commentMapper::toCommentDto)
-                            .collect(Collectors.toList())
-            );
+                            .collect(Collectors.toList()))
+                    .build();
         }
     }
 
     private List<Booking> lastBooking(Long itemId) {
-        return bookingRepository.findAll()
+        return bookingRepository.findAllByItemIdAndEndBefore(itemId, LocalDateTime.now())
                 .stream()
-                .filter(booking -> booking.getItemId().equals(itemId))
-                .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
                 .sorted(Comparator.comparing(Booking::getEnd).reversed())
                 .collect(Collectors.toList());
     }
 
     private List<Booking> nextBooking(Long itemId) {
-        return bookingRepository.findAll()
+        return bookingRepository.findAllByItemIdAndStartAfter(itemId, LocalDateTime.now())
                 .stream()
-                .filter(booking -> booking.getItemId().equals(itemId))
-                .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
                 .sorted(Comparator.comparing(Booking::getStart))
                 .collect(Collectors.toList());
     }
