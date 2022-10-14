@@ -34,12 +34,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking create(Booking booking, Long bookerId) {
+    public BookingDto create(Booking booking, Long bookerId) {
         bookingValidation.bookingValidation(bookerId, booking);
         booking.setBookerId(bookerId);
         booking.setStatus(BookingStatus.WAITING);
         log.info("Запрос на бронирование успешно создан");
-        return bookingRepository.save(booking);
+        return bookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
