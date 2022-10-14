@@ -81,8 +81,8 @@ public class BookingServiceImpl implements BookingService {
             case "PAST":
                 return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndEndBefore(bookerId, presentTime));
             case "CURRENT":
-                return toBookingDtoSortedByTime(bookingRepository.
-                        findAllByBookerIdAndStartBeforeAndEndAfter(bookerId, presentTime, presentTime));
+                return toBookingDtoSortedByTime(bookingRepository
+                        .findAllByBookerIdAndStartBeforeAndEndAfter(bookerId, presentTime, presentTime));
             default:
                 return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId)
                         .stream()
