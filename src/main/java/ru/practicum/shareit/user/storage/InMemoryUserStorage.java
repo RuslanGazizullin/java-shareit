@@ -78,6 +78,7 @@ public class InMemoryUserStorage implements UserStorage {
     public void delete(Long id) {
         userValidation.idValidation(users, id);
         users.remove(id);
+        log.info("Пользователь успешно удалён");
     }
 
     @Override

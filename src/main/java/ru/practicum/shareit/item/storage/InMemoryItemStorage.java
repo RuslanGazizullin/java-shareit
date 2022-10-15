@@ -46,8 +46,8 @@ public class InMemoryItemStorage implements ItemStorage {
         if (item.getDescription() != null) {
             updatedItem.setDescription(item.getDescription());
         }
-        if (item.getAvailable() != null) {
-            updatedItem.setAvailable(item.getAvailable());
+        if (item.getIsAvailable() != null) {
+            updatedItem.setIsAvailable(item.getIsAvailable());
         }
         items.remove(itemId);
         items.put(itemId, updatedItem);
@@ -57,6 +57,7 @@ public class InMemoryItemStorage implements ItemStorage {
 
     @Override
     public Item findById(Long itemId) {
+        log.info("Данные о вещи успешно получены");
         return items.get(itemId);
     }
 
@@ -76,9 +77,9 @@ public class InMemoryItemStorage implements ItemStorage {
         List<Item> itemsWithText = new ArrayList<>();
         if (text != null && !text.isBlank()) {
             for (Item item : items.values()) {
-                if ((item.getName().toLowerCase().contains(text.toLowerCase()) && item.getAvailable().equals(true)) ||
+                if ((item.getName().toLowerCase().contains(text.toLowerCase()) && item.getIsAvailable().equals(true)) ||
                         (item.getDescription().toLowerCase().contains(text.toLowerCase()) &&
-                                item.getAvailable().equals(true))) {
+                                item.getIsAvailable().equals(true))) {
                     itemsWithText.add(item);
                 }
             }
