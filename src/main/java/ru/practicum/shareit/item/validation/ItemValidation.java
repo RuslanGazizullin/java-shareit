@@ -81,7 +81,7 @@ public class ItemValidation {
         if (comment.getText().isBlank()) {
             throw new CommentValidationException("Текст комментария отсутствует");
         }
-        if (bookingRepository.findAllByItemIdAndAndBookerId(itemId, userId)
+        if (bookingRepository.findAllByItemIdAndBookerId(itemId, userId)
                 .stream()
                 .filter(booking -> booking.getStatus().equals(BookingStatus.APPROVED))
                 .noneMatch(booking -> booking.getEnd().isBefore(LocalDateTime.now()))) {
