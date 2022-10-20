@@ -2,10 +2,7 @@ package ru.practicum.shareit.requests.model;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Data
 @Entity
@@ -13,6 +10,7 @@ import javax.persistence.Table;
 public class ItemRequest {
     @Id
     @Column
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column
     private String description;

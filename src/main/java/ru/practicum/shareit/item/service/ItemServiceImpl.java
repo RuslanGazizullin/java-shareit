@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.dto.*;
@@ -62,9 +63,9 @@ public class ItemServiceImpl implements ItemService {
             updatedItem.setDescription(itemDto.getDescription());
         }
         if (itemDto.getAvailable() == null) {
-            updatedItem.setIsAvailable(oldItem.getIsAvailable());
+            updatedItem.setAvailable(oldItem.getAvailable());
         } else {
-            updatedItem.setIsAvailable(itemDto.getAvailable());
+            updatedItem.setAvailable(itemDto.getAvailable());
         }
         itemRepository.save(updatedItem);
         log.info("Данные о вещи успешно обновлены");
@@ -79,23 +80,38 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingDto> findAllByOwner(Long userId) {
+    public List<ItemWithBookingDto> findAllByOwner(Long userId, Integer from, Integer size) {
         log.info("Список вещей пользователя успешно сформирован");
-        return itemRepository.findAllByOwner(userId)
-                .stream()
-                .map(item -> itemMapper.toItemWithBookingDto(item, userId))
-                .collect(Collectors.toList());
+        if (from == null || size == null) {
+            return itemRepository.findAllByOwner(userId)
+                    .stream()
+                    .map(item -> itemMapper.toItemWithBookingDto(item, userId))
+                    .collect(Collectors.toList());
+        } else {
+            itemValidation.fromAndSizeValidation(from, size);
+            return itemRepository.findAllByOwner(userId, PageRequest.of(from / size, size))
+                    .stream()
+                    .map(item -> itemMapper.toItemWithBookingDto(item, userId))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
-    public List<ItemDto> findByText(String text) {
+    public List<ItemDto> findByText(String text, Integer from, Integer size) {
         log.info("Список доступных для аренды вещей успешно сформирован");
         if (text.isBlank()) {
             return new ArrayList<>();
-        } else {
+        } else if (from == null || size == null) {
             return itemRepository.findByText(text)
                     .stream()
-                    .filter(Item -> Item.getIsAvailable().equals(true))
+                    .filter(Item -> Item.getAvailable().equals(true))
+                    .map(itemMapper::toItemDto)
+                    .collect(Collectors.toList());
+        } else {
+            itemValidation.fromAndSizeValidation(from, size);
+            return itemRepository.findByText(text, PageRequest.of(from / size, size))
+                    .stream()
+                    .filter(Item -> Item.getAvailable().equals(true))
                     .map(itemMapper::toItemDto)
                     .collect(Collectors.toList());
         }

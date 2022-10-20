@@ -48,7 +48,7 @@ public class ItemValidation {
     }
 
     public void availableValidation(Item item) {
-        if (item.getIsAvailable() == null) {
+        if (item.getAvailable() == null) {
             throw new ItemRequestValidationException("Не указана доступность вещи");
         }
     }
@@ -103,5 +103,11 @@ public class ItemValidation {
         availableValidation(item);
         emptyItemNameValidation(item);
         emptyItemDescriptionValidation(item);
+    }
+
+    public void fromAndSizeValidation(Integer from, Integer size) {
+        if (from < 0 || size <= 0) {
+            throw new ItemRequestValidationException("Недопустимые параматры from и size");
+        }
     }
 }

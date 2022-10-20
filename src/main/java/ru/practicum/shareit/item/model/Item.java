@@ -19,17 +19,17 @@ public class Item {
     @Column
     private String description;
     @Column(name = "is_available")
-    private Boolean isAvailable;
+    private Boolean available;
     @Column(name = "owner_id")
     private Long owner;
     @Column(name = "request_id")
     private Long requestId;
 
-    public Item(Long id, String name, String description, Boolean isAvailable, Long owner, Long requestId) {
+    public Item(Long id, String name, String description, Boolean available, Long owner, Long requestId) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.isAvailable = isAvailable;
+        this.available = available;
         this.owner = owner;
         this.requestId = requestId;
     }

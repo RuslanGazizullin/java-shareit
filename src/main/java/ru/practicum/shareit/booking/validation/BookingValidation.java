@@ -4,10 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.BookingNotFoundException;
-import ru.practicum.shareit.exception.BookingValidationException;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -42,7 +39,7 @@ public class BookingValidation {
     }
 
     public void itemAvailableValidation(Booking booking) {
-        if (itemRepository.findById(booking.getItemId()).get().getIsAvailable().equals(false)) {
+        if (itemRepository.findById(booking.getItemId()).get().getAvailable().equals(false)) {
             throw new BookingValidationException("Вещь недоступна для аренды");
         }
     }
@@ -104,6 +101,12 @@ public class BookingValidation {
     public void ownerCreateBookingValidation(Booking booking, Long userId) {
         if (itemRepository.findById(booking.getItemId()).get().getOwner().equals(userId)) {
             throw new UserNotFoundException("Хозяин не может забронировать свою вещь");
+        }
+    }
+
+    public void fromAndSizeValidation(Integer from, Integer size) {
+        if (from < 0 || size <= 0) {
+            throw new BookingValidationException("Недопустимые параматры from и size");
         }
     }
 
