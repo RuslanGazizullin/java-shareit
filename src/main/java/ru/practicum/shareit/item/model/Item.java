@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
@@ -9,6 +11,8 @@ import javax.persistence.*;
 @Builder
 @Entity
 @Table(name = "items")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Item {
     @Id
     @Column
@@ -24,16 +28,4 @@ public class Item {
     private Long owner;
     @Column(name = "request_id")
     private Long requestId;
-
-    public Item(Long id, String name, String description, Boolean available, Long owner, Long requestId) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.owner = owner;
-        this.requestId = requestId;
-    }
-
-    public Item() {
-    }
 }

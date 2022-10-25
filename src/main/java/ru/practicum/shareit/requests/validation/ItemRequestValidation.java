@@ -35,10 +35,4 @@ public class ItemRequestValidation {
             throw new NotFoundException("Запрос не найден");
         }
     }
-
-    public void fromAndSizeValidation(Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new ValidationException("Недопустимые параматры from и size");
-        }
-    }
 }

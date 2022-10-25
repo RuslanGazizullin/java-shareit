@@ -1,12 +1,16 @@
 package ru.practicum.shareit.requests;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.requests.service.ItemRequestService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping(path = "/requests")
 public class ItemRequestController {
@@ -29,8 +33,8 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @RequestParam(required = false) Integer from,
-                                        @RequestParam(required = false) Integer size) {
+                                        @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                        @RequestParam(defaultValue = "10") @Positive Integer size) {
         return itemRequestService.findAll(userId, from, size);
     }
 

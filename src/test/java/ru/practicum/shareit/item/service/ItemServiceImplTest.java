@@ -1,504 +1,196 @@
 package ru.practicum.shareit.item.service;
 
-import org.junit.jupiter.api.BeforeEach;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
-import ru.practicum.shareit.booking.BookingStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ItemWithoutUserIdException;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.CommentRepository;
-import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.item.validation.ItemValidation;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
+
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
+@SpringBootTest(
+        properties = "db.name=test",
+        webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ItemServiceImplTest {
 
-    @MockBean
-    private ItemRepository itemRepository;
-    @MockBean
-    private BookingRepository bookingRepository;
-    @MockBean
-    private CommentRepository commentRepository;
-    @MockBean
-    private UserRepository userRepository;
-    private ItemService itemService;
-    private Item item;
-    private ItemDto itemDto;
-    private ItemDto resultItem;
-    private List<ItemDto> resultItems;
-    private List<ItemWithBookingDto> resultItemsWithBookings;
-    private PageImpl<Item> itemPage;
-    private final List<Item> items = new ArrayList<>();
-    private final LocalDateTime presentTime = LocalDateTime.now().withNano(0);
-    private final Comment comment = new Comment(1L, "text", 1L, 1L);
-    private final CommentDto commentDto = new CommentDto(1L, "text", "name", presentTime);
-    private final List<Booking> bookings = new ArrayList<>();
-    private final ItemWithBookingDto itemWithBookingDto = ItemWithBookingDto
-            .builder()
-            .id(1L)
-            .name("name")
-            .description("description")
-            .available(true)
-            .lastBooking(null)
-            .nextBooking(null)
-            .comments(new ArrayList<>())
-            .requestId(1L)
-            .build();
-    private final ItemDto updateItem = ItemDto
-            .builder()
-            .id(1L)
-            .name("updatedName")
-            .description("updatedDescription")
-            .available(true)
-            .owner(1L)
-            .requestId(null)
-            .build();
-    private final ItemDto updatedItem = ItemDto
-            .builder()
-            .id(1L)
-            .name("updatedName")
-            .description("updatedDescription")
-            .available(true)
-            .owner(1L)
-            .requestId(null)
-            .build();
-    private final User user = new User(1L, "name", "email@email.ru");
-    private final Booking booking = Booking
-            .builder()
-            .id(1L)
-            .start(presentTime.minusDays(1L))
-            .end(presentTime.minusHours(2L))
-            .itemId(1L)
-            .bookerId(1L)
-            .status(BookingStatus.APPROVED)
-            .build();
-
-    @BeforeEach
-    void beforeEach() {
-        itemRepository = mock(ItemRepository.class);
-        bookingRepository = mock(BookingRepository.class);
-        commentRepository = mock(CommentRepository.class);
-        userRepository = mock(UserRepository.class);
-        CommentMapper commentMapper = new CommentMapper(userRepository);
-        ItemMapper itemMapper = new ItemMapper(bookingRepository, commentRepository, commentMapper);
-        ItemValidation itemValidation = new ItemValidation(userRepository, itemRepository, bookingRepository);
-        itemService = new ItemServiceImpl(itemRepository, itemMapper, itemValidation, commentRepository, commentMapper);
-        item = Item
-                .builder()
-                .id(1L)
-                .name("name")
-                .description("description")
-                .available(true)
-                .owner(1L)
-                .requestId(1L)
-                .build();
-        itemDto = ItemDto
-                .builder()
-                .id(1L)
-                .name("name")
-                .description("description")
-                .available(true)
-                .owner(1L)
-                .requestId(1L)
-                .build();
-    }
+    private final EntityManager em;
+    private final ItemService itemService;
+    private final UserService userService;
+    private final BookingService bookingService;
 
     @Test
+    @DirtiesContext
     void testAdd() {
-        when(itemRepository.save(any()))
-                .thenReturn(item);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
+        ItemDto item = ItemDto.builder().name("name").description("description").available(true).build();
+        userService.add(User.builder().name("name").email("email@email.ru").build());
+        itemService.add(item, 1L);
 
-        resultItem = itemService.add(itemDto, 1L);
+        TypedQuery<Item> query = em
+                .createQuery("Select i from Item i where i.description = :description", Item.class);
+        Item item1 = query
+                .setParameter("description", item.getDescription())
+                .getSingleResult();
 
-        assertNotNull(resultItem);
-        assertEquals(resultItem, itemDto);
+        assertThat(item1.getId(), notNullValue());
+        assertThat(item1.getId(), equalTo(1L));
+        assertThat(item1.getName(), equalTo(item.getName()));
+        assertThat(item1.getDescription(), equalTo(item.getDescription()));
+        assertThat(item1.getAvailable(), equalTo(item.getAvailable()));
+        assertThat(item1.getOwner(), equalTo(item.getOwner()));
+        assertThat(item1.getRequestId(), equalTo(item.getRequestId()));
     }
 
     @Test
-    void testAddNoUser() {
-        final ItemWithoutUserIdException exception = assertThrows(
-                ItemWithoutUserIdException.class,
-                () -> itemService.add(itemDto, null)
-        );
-
-        assertEquals(exception.getMessage(), "Не указан хозяин вещи");
-    }
-
-    @Test
-    void testAddWrongUser() {
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.empty());
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemService.add(itemDto, 99L)
-        );
-
-        assertEquals(exception.getMessage(), "Пользователь не найден");
-    }
-
-    @Test
-    void testAddNoAvailable() {
-        itemDto.setAvailable(null);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.add(itemDto, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Не указана доступность вещи");
-    }
-
-    @Test
-    void testAddNoName() {
-        itemDto.setName("");
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.add(itemDto, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Не указано название вещи");
-    }
-
-    @Test
-    void testAddNullDescription() {
-        itemDto.setDescription(null);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.add(itemDto, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Не указано описание вещи");
-    }
-
-    @Test
-    void testAddNoDescription() {
-        itemDto.setDescription("");
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.add(itemDto, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Не указано описание вещи");
-    }
-
-    @Test
-    void testUpdateNoItem() {
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.empty());
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemService.update(itemDto, 99L, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Вещь с таким id не существует");
-    }
-
-    @Test
-    void testUpdateWrongOwner() {
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(item));
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemService.update(itemDto, 1L, 2L)
-        );
-
-        assertEquals(exception.getMessage(), "Пользователь не является владельцем");
-    }
-
-    @Test
+    @DirtiesContext
     void testUpdate() {
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(item));
+        ItemDto item = ItemDto.builder().name("name").description("description").available(true).build();
+        ItemDto updatedItem = ItemDto.builder().name("updatedName").description("updatedDescription").available(true).build();
+        userService.add(User.builder().name("name").email("email@email.ru").build());
+        itemService.add(item, 1L);
+        ItemDto result = itemService.update(updatedItem, 1L, 1L);
 
-        resultItem = itemService.update(updateItem, 1L, 1L);
+        TypedQuery<Item> query = em
+                .createQuery("Select i from Item i where i.description = :description", Item.class);
+        Item item1 = query
+                .setParameter("description", updatedItem.getDescription())
+                .getSingleResult();
 
-        assertNotNull(resultItem);
-        assertEquals(resultItem, updatedItem);
+        assertThat(item1.getId(), notNullValue());
+        assertThat(item1.getId(), equalTo(result.getId()));
+        assertThat(item1.getName(), equalTo(result.getName()));
+        assertThat(item1.getDescription(), equalTo(result.getDescription()));
+        assertThat(item1.getAvailable(), equalTo(result.getAvailable()));
+        assertThat(item1.getOwner(), equalTo(result.getOwner()));
+        assertThat(item1.getRequestId(), equalTo(result.getRequestId()));
     }
 
     @Test
-    void testUpdateNoName() {
-        updateItem.setName(null);
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(item));
-
-        resultItem = itemService.update(updateItem, 1L, 1L);
-
-        updatedItem.setName(item.getName());
-
-        assertNotNull(resultItem);
-        assertEquals(resultItem, updatedItem);
-    }
-
-    @Test
-    void testUpdateNoDescription() {
-        updateItem.setDescription(null);
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(item));
-
-        resultItem = itemService.update(updateItem, 1L, 1L);
-
-        updatedItem.setDescription(item.getDescription());
-
-        assertNotNull(resultItem);
-        assertEquals(resultItem, updatedItem);
-    }
-
-    @Test
-    void testUpdateNoAvailable() {
-        updateItem.setAvailable(null);
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(item));
-
-        resultItem = itemService.update(updateItem, 1L, 1L);
-
-        updatedItem.setAvailable(item.getAvailable());
-
-        assertNotNull(resultItem);
-        assertEquals(resultItem, updatedItem);
-    }
-
-    @Test
-    void testFindByIdNoItem() {
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.empty());
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemService.findById(99L, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Вещь с таким id не существует");
-    }
-
-    @Test
+    @DirtiesContext
     void testFindById() {
-        bookings.add(new Booking());
-        when(itemRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(item));
-        when(bookingRepository.findAllByItemIdAndEndBefore(1L, presentTime))
-                .thenReturn(bookings);
-        when(bookingRepository.findAllByItemIdAndStartAfter(1L, presentTime))
-                .thenReturn(bookings);
-        when(commentRepository.findAllByItemId(any()))
-                .thenReturn(new ArrayList<>());
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
+        ItemDto item1 = ItemDto.builder().name("name1").description("description1").available(true).build();
+        ItemDto item2 = ItemDto.builder().name("name2").description("description2").available(true).build();
+        userService.add(User.builder().name("name").email("email@email.ru").build());
+        itemService.add(item1, 1L);
+        itemService.add(item2, 1L);
 
-        ItemWithBookingDto resultItemWithBooking = itemService.findById(1L, 1L);
+        TypedQuery<Item> query = em
+                .createQuery("Select i from Item i where i.id = :id", Item.class);
+        Item result = query
+                .setParameter("id", 1L)
+                .getSingleResult();
 
-        assertEquals(resultItemWithBooking, itemWithBookingDto);
+        assertThat(result.getId(), notNullValue());
+        assertThat(result.getId(), equalTo(1L));
+        assertThat(result.getName(), equalTo(item1.getName()));
+        assertThat(result.getDescription(), equalTo(item1.getDescription()));
+        assertThat(result.getAvailable(), equalTo(item1.getAvailable()));
+        assertThat(result.getOwner(), equalTo(item1.getOwner()));
+        assertThat(result.getRequestId(), equalTo(item1.getRequestId()));
     }
 
     @Test
-    void testFindAllByOwnerNoPage() {
-        items.add(item);
-        when(itemRepository.findAllByOwner(any()))
-                .thenReturn(items);
+    @DirtiesContext
+    void testFindAllByOwner() {
+        ItemDto item1 = ItemDto.builder().name("name1").description("description1").available(true).build();
+        ItemDto item2 = ItemDto.builder().name("name2").description("description2").available(true).build();
+        userService.add(User.builder().name("name1").email("email1@email.ru").build());
+        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        itemService.add(item1, 1L);
+        itemService.add(item2, 2L);
 
-        resultItemsWithBookings = itemService.findAllByOwner(1L, null, null);
+        TypedQuery<Item> query = em
+                .createQuery("Select i from Item i where i.owner = :owner", Item.class);
+        List<Item> result = query
+                .setParameter("owner", 1L)
+                .getResultList();
 
-        assertEquals(resultItemsWithBookings.size(), 1);
-        assertEquals(resultItemsWithBookings.get(0), itemWithBookingDto);
+        assertThat(result.size(), equalTo(1));
+        assertThat(result.get(0).getId(), notNullValue());
+        assertThat(result.get(0).getId(), equalTo(1L));
+        assertThat(result.get(0).getName(), equalTo(item1.getName()));
+        assertThat(result.get(0).getDescription(), equalTo(item1.getDescription()));
+        assertThat(result.get(0).getAvailable(), equalTo(item1.getAvailable()));
+        assertThat(result.get(0).getOwner(), equalTo(item1.getOwner()));
+        assertThat(result.get(0).getRequestId(), equalTo(item1.getRequestId()));
     }
 
     @Test
-    void testFindAllByOwnerNoPageWithFrom() {
-        items.add(item);
-        when(itemRepository.findAllByOwner(any()))
-                .thenReturn(items);
+    @DirtiesContext
+    void testFindByText() {
+        ItemDto item1 = ItemDto.builder().name("name1Text").description("description1").available(true).build();
+        ItemDto item2 = ItemDto.builder().name("name2").description("description2Text").available(true).build();
+        userService.add(User.builder().name("name1").email("email1@email.ru").build());
+        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        itemService.add(item1, 1L);
+        itemService.add(item2, 2L);
 
-        resultItemsWithBookings = itemService.findAllByOwner(1L, 0, null);
+        TypedQuery<Item> query = em
+                .createQuery("select i from Item i " +
+                        "where upper(i.name) like upper(concat('%', :text, '%')) " +
+                        " or upper(i.description) like upper(concat('%', :text, '%'))", Item.class);
+        List<Item> result = query
+                .setParameter("text", "text")
+                .getResultList();
 
-        assertEquals(resultItemsWithBookings.size(), 1);
-        assertEquals(resultItemsWithBookings.get(0), itemWithBookingDto);
+        assertThat(result.size(), equalTo(2));
+        assertThat(result.get(0).getId(), notNullValue());
+        assertThat(result.get(0).getId(), equalTo(1L));
+        assertThat(result.get(0).getName(), equalTo(item1.getName()));
+        assertThat(result.get(1).getDescription(), equalTo(item2.getDescription()));
+        assertThat(result.get(0).getAvailable(), equalTo(item1.getAvailable()));
+        assertThat(result.get(1).getOwner(), equalTo(item2.getOwner()));
+        assertThat(result.get(0).getRequestId(), equalTo(item1.getRequestId()));
     }
 
     @Test
-    void testFindAllByOwnerPage() {
-        itemPage = new PageImpl<>(Collections.singletonList(item));
-        when(itemRepository.findAllByOwner(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        resultItemsWithBookings = itemService.findAllByOwner(1L, 0, 1);
-
-        assertEquals(resultItemsWithBookings.size(), 1);
-        assertEquals(resultItemsWithBookings.get(0), itemWithBookingDto);
-    }
-
-    @Test
-    void testFindAllByOwnerPageWrongSize() {
-        itemPage = new PageImpl<>(Collections.singletonList(item));
-        when(itemRepository.findAllByOwner(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.findAllByOwner(1L, 0, 0)
-        );
-
-        assertEquals(exception.getMessage(), "Недопустимые параматры from и size");
-    }
-
-    @Test
-    void testFindAllByOwnerPageWrongFrom() {
-        itemPage = new PageImpl<>(Collections.singletonList(item));
-        when(itemRepository.findAllByOwner(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.findAllByOwner(1L, -1, 1)
-        );
-
-        assertEquals(exception.getMessage(), "Недопустимые параматры from и size");
-    }
-
-    @Test
-    void testFindByTextNoTextNoPage() {
-        resultItems = itemService.findByText("", null, null);
-
-        assertEquals(resultItems.size(), 0);
-    }
-
-    @Test
-    void testFindByTextNoPage() {
-        items.add(item);
-        when(itemRepository.findByText(any()))
-                .thenReturn(items);
-
-        resultItems = itemService.findByText("name", null, null);
-
-        assertEquals(resultItems.size(), 1);
-        assertEquals(resultItems.get(0), itemDto);
-    }
-
-    @Test
-    void testFindByTextNoPageWithFrom() {
-        items.add(item);
-        when(itemRepository.findByText(any()))
-                .thenReturn(items);
-
-        resultItems = itemService.findByText("name", 0, null);
-
-        assertEquals(resultItems.size(), 1);
-        assertEquals(resultItems.get(0), itemDto);
-    }
-
-    @Test
-    void testFindByTextPage() {
-        itemPage = new PageImpl<>(Collections.singletonList(item));
-        when(itemRepository.findByText(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        resultItems = itemService.findByText("name", 0, 1);
-
-        assertEquals(resultItems.size(), 1);
-        assertEquals(resultItems.get(0), itemDto);
-    }
-
-    @Test
-    void testFindByTextPageWrongSize() {
-        itemPage = new PageImpl<>(Collections.singletonList(item));
-        when(itemRepository.findByText(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.findByText("name", 0, 0)
-        );
-
-        assertEquals(exception.getMessage(), "Недопустимые параматры from и size");
-    }
-
-    @Test
-    void testFindByTextPageWrongFrom() {
-        itemPage = new PageImpl<>(Collections.singletonList(item));
-        when(itemRepository.findByText(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.findByText("name", -1, 1)
-        );
-
-        assertEquals(exception.getMessage(), "Недопустимые параматры from и size");
-    }
-
-    @Test
+    @DirtiesContext
     void testAddComment() {
-        bookings.add(booking);
-        when(commentRepository.save(comment))
-                .thenReturn(comment);
-        when(bookingRepository.findAllByItemIdAndBookerId(any(), any()))
-                .thenReturn(bookings);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
+        Comment comment = Comment.builder().text("text").build();
+        userService.add(User.builder().name("name").email("email@email.ru").build());
+        userService.add(User.builder().name("booker").email("email1@email.ru").build());
+        itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
+        bookingService.create(Booking
+                        .builder()
+                        .start(LocalDateTime.now().plusSeconds(1L))
+                        .end(LocalDateTime.now().plusSeconds(2L))
+                        .itemId(1L)
+                        .build(),
+                2L);
+        bookingService.approve(1L, true, 1L);
+        try {
+            TimeUnit.SECONDS.sleep(3);
+            itemService.addComment(comment, 1L, 2L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
-        assertEquals(itemService.addComment(comment, 1L, 1L), commentDto);
-    }
+        TypedQuery<Comment> query = em
+                .createQuery("Select c from Comment c where c.text = :text", Comment.class);
+        Comment result = query
+                .setParameter("text", comment.getText())
+                .getSingleResult();
 
-    @Test
-    void testAddCommentNoText() {
-        comment.setText("");
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.addComment(comment, 1L, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Текст комментария отсутствует");
-    }
-
-    @Test
-    void testAddCommentWrongBooker() {
-        booking.setEnd(presentTime.plusHours(10L));
-        bookings.add(booking);
-        when(commentRepository.save(comment))
-                .thenReturn(comment);
-        when(bookingRepository.findAllByItemIdAndBookerId(any(), any()))
-                .thenReturn(bookings);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemService.addComment(comment, 1L, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Пользователь не арендовал данную вещь");
+        assertThat(result.getId(), notNullValue());
+        assertThat(result.getId(), equalTo(1L));
+        assertThat(result.getText(), equalTo(comment.getText()));
+        assertThat(result.getItemId(), equalTo(1L));
+        assertThat(result.getAuthorId(), equalTo(2L));
     }
 }

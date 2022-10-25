@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -7,8 +8,11 @@ import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/items")
 public class ItemController {
@@ -37,15 +41,15 @@ public class ItemController {
 
     @GetMapping()
     public List<ItemWithBookingDto> findAllByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                   @RequestParam(required = false) Integer from,
-                                                   @RequestParam(required = false) Integer size) {
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                   @RequestParam(defaultValue = "10") @Positive Integer size) {
         return itemService.findAllByOwner(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemDto> findByText(@RequestParam String text,
-                                    @RequestParam(required = false) Integer from,
-                                    @RequestParam(required = false) Integer size) {
+                                    @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                    @RequestParam(defaultValue = "10") @Positive Integer size) {
         return itemService.findByText(text, from, size);
     }
 

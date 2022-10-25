@@ -20,11 +20,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             " or upper(i.description) like upper(concat('%', ?1, '%'))")
     Page<Item> findByText(String text, Pageable pageable);
 
-    @Query("select i from Item i " +
-            "where upper(i.name) like upper(concat('%', ?1, '%')) " +
-            " or upper(i.description) like upper(concat('%', ?1, '%'))")
-    List<Item> findByText(String text);
-
     List<Item> findAllByRequestId(Long requestId);
 
     Page<Item> findAllByOwner(Long ownerId, Pageable pageable);

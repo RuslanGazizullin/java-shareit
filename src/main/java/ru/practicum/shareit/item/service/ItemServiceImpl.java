@@ -82,18 +82,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemWithBookingDto> findAllByOwner(Long userId, Integer from, Integer size) {
         log.info("Список вещей пользователя успешно сформирован");
-        if (from == null || size == null) {
-            return itemRepository.findAllByOwner(userId)
-                    .stream()
-                    .map(item -> itemMapper.toItemWithBookingDto(item, userId))
-                    .collect(Collectors.toList());
-        } else {
-            itemValidation.fromAndSizeValidation(from, size);
-            return itemRepository.findAllByOwner(userId, PageRequest.of(from / size, size))
-                    .stream()
-                    .map(item -> itemMapper.toItemWithBookingDto(item, userId))
-                    .collect(Collectors.toList());
-        }
+        return itemRepository.findAllByOwner(userId, PageRequest.of(from / size, size))
+                .stream()
+                .map(item -> itemMapper.toItemWithBookingDto(item, userId))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -101,14 +93,7 @@ public class ItemServiceImpl implements ItemService {
         log.info("Список доступных для аренды вещей успешно сформирован");
         if (text.isBlank()) {
             return new ArrayList<>();
-        } else if (from == null || size == null) {
-            return itemRepository.findByText(text)
-                    .stream()
-                    .filter(Item -> Item.getAvailable().equals(true))
-                    .map(itemMapper::toItemDto)
-                    .collect(Collectors.toList());
         } else {
-            itemValidation.fromAndSizeValidation(from, size);
             return itemRepository.findByText(text, PageRequest.of(from / size, size))
                     .stream()
                     .filter(Item -> Item.getAvailable().equals(true))

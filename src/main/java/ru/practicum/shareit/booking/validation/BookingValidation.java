@@ -104,12 +104,6 @@ public class BookingValidation {
         }
     }
 
-    public void fromAndSizeValidation(Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new ValidationException("Недопустимые параматры from и size");
-        }
-    }
-
     public void itemIdValidation(List<Long> itemsId) {
         if (itemsId.size() == 0) {
             throw new ValidationException("У владельца нет ни одной вещи");

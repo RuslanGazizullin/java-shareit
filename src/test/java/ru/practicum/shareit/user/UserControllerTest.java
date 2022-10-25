@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.ArrayList;
@@ -35,9 +35,9 @@ class UserControllerTest {
     @Autowired
     ObjectMapper mapper;
 
-    private final User user = new User(1L, "name", "email@email.ru");
-    private final User updatedUser = new User(1L, "updatedName", "updatedEmail@email.ru");
-    private final List<User> users = new ArrayList<>();
+    private final UserDto user = new UserDto(1L, "name", "email@email.ru");
+    private final UserDto updatedUser = new UserDto(1L, "updatedName", "updatedEmail@email.ru");
+    private final List<UserDto> users = new ArrayList<>();
 
     @Test
     void testAdd() throws Exception {

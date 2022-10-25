@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.validation.UserValidation;
@@ -22,16 +24,20 @@ class UserServiceTest {
     @MockBean
     private UserRepository userRepository;
     private UserService userService;
-    private User resultUser;
+    private UserMapper userMapper;
+    private UserDto resultUser;
     private User user;
+    private UserDto userDto;
 
     @BeforeEach
     void beforeEach() {
         userRepository = mock(UserRepository.class);
         UserValidation userValidation = new UserValidation(userRepository);
-        userService = new UserServiceImpl(userRepository, userValidation);
+        userMapper = new UserMapper();
+        userService = new UserServiceImpl(userRepository, userValidation, userMapper);
         user = new User(1L, "name", "email@email.ru");
-        resultUser = new User();
+        userDto = new UserDto(1L, "name", "email@email.ru");
+        resultUser = new UserDto();
     }
 
     @Test
@@ -42,7 +48,7 @@ class UserServiceTest {
         resultUser = userService.add(user);
 
         assertNotNull(resultUser);
-        assertEquals(resultUser, user);
+        assertEquals(resultUser, userDto);
     }
 
     @Test
@@ -76,7 +82,7 @@ class UserServiceTest {
         resultUser = userService.update(updatedUser, 1L);
 
         assertNotNull(resultUser);
-        assertEquals(resultUser, updatedUser);
+        assertEquals(resultUser, userMapper.toUserDto(updatedUser));
     }
 
     @Test
@@ -84,7 +90,7 @@ class UserServiceTest {
         when(userRepository.findById(any()))
                 .thenReturn(Optional.ofNullable(user));
         User updatedUser = new User(null, "updatedName", null);
-        User finalUpdatedUser = new User(1L, "updatedName", "email@email.ru");
+        UserDto finalUpdatedUser = new UserDto(1L, "updatedName", "email@email.ru");
         when(userRepository.save(any()))
                 .thenReturn(user);
 
@@ -99,7 +105,7 @@ class UserServiceTest {
         when(userRepository.findById(any()))
                 .thenReturn(Optional.ofNullable(user));
         User updatedUser = new User(null, null, "updatedEmail@email.ru");
-        User finalUpdatedUser = new User(1L, "name", "updatedEmail@email.ru");
+        UserDto finalUpdatedUser = new UserDto(1L, "name", "updatedEmail@email.ru");
         when(userRepository.save(any()))
                 .thenReturn(user);
 
@@ -140,7 +146,7 @@ class UserServiceTest {
         when(userRepository.findAll())
                 .thenReturn(new ArrayList<>());
 
-        List<User> result = userService.findAll();
+        List<UserDto> result = userService.findAll();
         assertEquals(result.size(), 0);
     }
 
@@ -151,11 +157,11 @@ class UserServiceTest {
         when(userRepository.findAll())
                 .thenReturn(users);
 
-        List<User> result = userService.findAll();
+        List<UserDto> result = userService.findAll();
 
         assertNotNull(result);
         assertEquals(result.size(), 1);
-        assertEquals(result.get(0), user);
+        assertEquals(result.get(0), userDto);
     }
 
     @Test
@@ -165,7 +171,7 @@ class UserServiceTest {
 
         resultUser = userService.findById(1L);
         assertNotNull(resultUser);
-        assertEquals(resultUser, user);
+        assertEquals(resultUser, userDto);
     }
 
     @Test

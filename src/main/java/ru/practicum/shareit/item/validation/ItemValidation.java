@@ -80,10 +80,4 @@ public class ItemValidation {
         emptyItemNameValidation(item);
         emptyItemDescriptionValidation(item);
     }
-
-    public void fromAndSizeValidation(Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
-            throw new ValidationException("Недопустимые параматры from и size");
-        }
-    }
 }

@@ -1,12 +1,18 @@
 package ru.practicum.shareit.requests.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Data
+@Builder
 @Entity
 @Table(name = "requests")
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemRequest {
     @Id
     @Column
@@ -16,13 +22,4 @@ public class ItemRequest {
     private String description;
     @Column
     private Long requesterId;
-
-    public ItemRequest() {
-    }
-
-    public ItemRequest(Long id, String description, Long requesterId) {
-        this.id = id;
-        this.description = description;
-        this.requesterId = requesterId;
-    }
 }

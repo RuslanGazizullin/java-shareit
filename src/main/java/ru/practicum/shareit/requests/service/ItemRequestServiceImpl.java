@@ -50,22 +50,13 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> findAll(Long userId, Integer from, Integer size) {
         log.info("Список запросов успешно получен");
-        if (from == null || size == null) {
-            return itemRequestRepository.findAll()
-                    .stream()
-                    .filter(itemRequest -> !itemRequest.getRequesterId().equals(userId))
-                    .map(itemRequestMapper::toItemRequestDto)
-                    .sorted(Comparator.comparing(ItemRequestDto::getCreated).reversed())
-                    .collect(Collectors.toList());
-        } else {
-            itemRequestValidation.fromAndSizeValidation(from, size);
-            return itemRequestRepository.findAll(PageRequest.of(from / size, size))
-                    .stream()
-                    .filter(itemRequest -> !itemRequest.getRequesterId().equals(userId))
-                    .map(itemRequestMapper::toItemRequestDto)
-                    .sorted(Comparator.comparing(ItemRequestDto::getCreated).reversed())
-                    .collect(Collectors.toList());
-        }
+        return itemRequestRepository.findAll(PageRequest.of(from / size, size))
+                .stream()
+                .filter(itemRequest -> !itemRequest.getRequesterId().equals(userId))
+                .map(itemRequestMapper::toItemRequestDto)
+                .sorted(Comparator.comparing(ItemRequestDto::getCreated).reversed())
+                .collect(Collectors.toList());
+
     }
 
     @Override

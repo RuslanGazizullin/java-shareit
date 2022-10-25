@@ -1,259 +1,110 @@
 package ru.practicum.shareit.requests.service;
 
-import org.junit.jupiter.api.BeforeEach;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.requests.dto.ItemRequestDto;
-import ru.practicum.shareit.requests.dto.ItemRequestMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.requests.model.ItemRequest;
-import ru.practicum.shareit.requests.repository.ItemRequestRepository;
-import ru.practicum.shareit.requests.validation.ItemRequestValidation;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
+@SpringBootTest(
+        properties = "db.name=test",
+        webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ItemRequestServiceImplTest {
 
-    @MockBean
-    private ItemRequestRepository itemRequestRepository;
-    @MockBean
-    private ItemRepository itemRepository;
-    @MockBean
-    private UserRepository userRepository;
-    private ItemRequestService itemRequestService;
-    private ItemRequest itemRequest;
-    private ItemRequestDto itemRequestDto;
-    private ItemRequestDto resultRequest;
-    private List<ItemRequestDto> resultList;
-    private PageImpl<ItemRequest> itemRequestPage;
-    private final LocalDateTime presentTime = LocalDateTime.now().withNano(0);
-    private final User user = new User(1L, "name", "email@email.ru");
-    private final List<Item> items = new ArrayList<>();
-    private final List<ItemRequest> itemRequests = new ArrayList<>();
-
-    @BeforeEach
-    void beforeEach() {
-        itemRequestRepository = mock(ItemRequestRepository.class);
-        itemRepository = mock(ItemRepository.class);
-        userRepository = mock(UserRepository.class);
-        ItemRequestMapper itemRequestMapper = new ItemRequestMapper(itemRepository);
-        ItemRequestValidation itemRequestValidation = new ItemRequestValidation(userRepository, itemRequestRepository);
-        itemRequestService = new ItemRequestServiceImpl(itemRequestRepository, itemRequestMapper, itemRequestValidation);
-        itemRequest = new ItemRequest(1L, "description", 1L);
-        itemRequestDto = new ItemRequestDto(1L, "description", presentTime, items);
-    }
+    private final EntityManager em;
+    private final ItemRequestService itemRequestService;
+    private final UserService userService;
 
     @Test
+    @DirtiesContext
     void testAdd() {
-        when(itemRequestRepository.save(any()))
-                .thenReturn(itemRequest);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
+        ItemRequest itemRequest = ItemRequest.builder().description("description").build();
+        userService.add(User.builder().name("name").email("email@email.ru").build());
+        itemRequestService.add(itemRequest, 1L);
 
-        resultRequest = itemRequestService.add(itemRequest, 1L);
+        TypedQuery<ItemRequest> query = em
+                .createQuery("Select ir from ItemRequest ir where ir.description = :description", ItemRequest.class);
+        ItemRequest itemRequest1 = query
+                .setParameter("description", itemRequest.getDescription())
+                .getSingleResult();
 
-        assertNotNull(resultRequest);
-        assertEquals(resultRequest, itemRequestDto);
+        assertThat(itemRequest1.getId(), notNullValue());
+        assertThat(itemRequest1.getDescription(), equalTo(itemRequest.getDescription()));
+        assertThat(itemRequest1.getRequesterId(), equalTo(itemRequest.getRequesterId()));
     }
 
     @Test
-    void testAddWrongUser() {
-        when(itemRequestRepository.save(any()))
-                .thenReturn(itemRequest);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.empty());
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemRequestService.add(itemRequest, 99L)
-        );
-
-        assertEquals(exception.getMessage(), "Пользователь не найден");
-    }
-
-    @Test
-    void testAddNoDescription() {
-        when(itemRequestRepository.save(any()))
-                .thenReturn(itemRequest);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-
-        itemRequest.setDescription(null);
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemRequestService.add(itemRequest, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Отсутствует описание запроса");
-    }
-
-    @Test
+    @DirtiesContext
     void testFindAllByRequester() {
-        itemRequests.add(itemRequest);
-        when(itemRequestRepository.findAllByRequesterId(any()))
-                .thenReturn(itemRequests);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
+        ItemRequest itemRequest1 = ItemRequest.builder().description("description1").build();
+        ItemRequest itemRequest2 = ItemRequest.builder().description("description2").build();
+        userService.add(User.builder().name("name1").email("email1@email.ru").build());
+        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        itemRequestService.add(itemRequest1, 1L);
+        itemRequestService.add(itemRequest2, 2L);
 
-        resultList = itemRequestService.findAllByRequester(1L);
+        TypedQuery<ItemRequest> query = em
+                .createQuery("Select ir from ItemRequest ir where ir.requesterId = :requesterId", ItemRequest.class);
+        List<ItemRequest> itemRequests = query
+                .setParameter("requesterId", itemRequest1.getRequesterId())
+                .getResultList();
 
-        assertNotNull(resultList);
-        assertEquals(resultList.size(), 1);
-        assertEquals(resultList.get(0), itemRequestDto);
+        assertThat(itemRequests.size(), equalTo(1));
+        assertThat(itemRequests.get(0).getId(), notNullValue());
+        assertThat(itemRequests.get(0).getDescription(), equalTo(itemRequest1.getDescription()));
+        assertThat(itemRequests.get(0).getRequesterId(), equalTo(itemRequest1.getRequesterId()));
     }
 
     @Test
-    void testFindAllByRequesterWrongUser() {
-        itemRequests.add(itemRequest);
-        when(itemRequestRepository.findAllByRequesterId(any()))
-                .thenReturn(itemRequests);
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.empty());
+    @DirtiesContext
+    void testFindAll() {
+        ItemRequest itemRequest1 = ItemRequest.builder().description("description1").build();
+        ItemRequest itemRequest2 = ItemRequest.builder().description("description2").build();
+        userService.add(User.builder().name("name").email("email@email.ru").build());
+        itemRequestService.add(itemRequest1, 1L);
+        itemRequestService.add(itemRequest2, 1L);
 
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemRequestService.findAllByRequester(99L)
-        );
+        TypedQuery<ItemRequest> query = em
+                .createQuery("Select ir from ItemRequest ir", ItemRequest.class);
+        List<ItemRequest> itemRequests = query.getResultList();
 
-        assertEquals(exception.getMessage(), "Пользователь не найден");
+        assertThat(itemRequests.size(), equalTo(2));
+        assertThat(itemRequests.get(0).getId(), notNullValue());
+        assertThat(itemRequests.get(0).getDescription(), equalTo(itemRequest1.getDescription()));
+        assertThat(itemRequests.get(1).getRequesterId(), equalTo(itemRequest2.getRequesterId()));
     }
 
     @Test
-    void testFindAllNoPage() {
-        itemRequests.add(itemRequest);
-        when(itemRequestRepository.findAll())
-                .thenReturn(itemRequests);
-
-        resultList = itemRequestService.findAll(2L, null, null);
-
-        assertNotNull(resultList);
-        assertEquals(resultList.size(), 1);
-        assertEquals(resultList.get(0), itemRequestDto);
-    }
-
-    @Test
-    void testFindAllNoPageWithFrom() {
-        itemRequests.add(itemRequest);
-        when(itemRequestRepository.findAll())
-                .thenReturn(itemRequests);
-
-        resultList = itemRequestService.findAll(2L, 0, null);
-
-        assertNotNull(resultList);
-        assertEquals(resultList.size(), 1);
-        assertEquals(resultList.get(0), itemRequestDto);
-    }
-
-    @Test
-    void testFindAllNoPageOwner() {
-        itemRequests.add(itemRequest);
-        when(itemRequestRepository.findAll())
-                .thenReturn(itemRequests);
-
-        resultList = itemRequestService.findAll(1L, null, null);
-
-        assertEquals(resultList.size(), 0);
-    }
-
-    @Test
-    void testFindAllPage() {
-        itemRequestPage = new PageImpl<>(Collections.singletonList(itemRequest));
-        when(itemRequestRepository.findAll(any(Pageable.class)))
-                .thenReturn(itemRequestPage);
-
-        resultList = itemRequestService.findAll(2L, 0, 1);
-
-        assertNotNull(resultList);
-        assertEquals(resultList.size(), 1);
-        assertEquals(resultList.get(0), itemRequestDto);
-    }
-
-    @Test
-    void testFindAllPageOwner() {
-        itemRequestPage = new PageImpl<>(Collections.singletonList(itemRequest));
-        when(itemRequestRepository.findAll(any(Pageable.class)))
-                .thenReturn(itemRequestPage);
-
-        resultList = itemRequestService.findAll(1L, 0, 1);
-
-        assertEquals(resultList.size(), 0);
-    }
-
-    @Test
-    void testFindAllPageWrongSize() {
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemRequestService.findAll(1L, 0, 0)
-        );
-
-        assertEquals(exception.getMessage(), "Недопустимые параматры from и size");
-    }
-
-    @Test
-    void testFindAllPageWrongFrom() {
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> itemRequestService.findAll(1L, -1, 1)
-        );
-
-        assertEquals(exception.getMessage(), "Недопустимые параматры from и size");
-    }
-
-    @Test
+    @DirtiesContext
     void testFindById() {
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-        when(itemRequestRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(itemRequest));
+        ItemRequest itemRequest1 = ItemRequest.builder().description("description1").build();
+        ItemRequest itemRequest2 = ItemRequest.builder().description("description2").build();
+        userService.add(User.builder().name("name1").email("email1@email.ru").build());
+        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        itemRequestService.add(itemRequest1, 1L);
+        itemRequestService.add(itemRequest2, 2L);
 
-        resultRequest = itemRequestService.findById(1L, 1L);
+        TypedQuery<ItemRequest> query = em
+                .createQuery("Select ir from ItemRequest ir where ir.id = :id", ItemRequest.class);
+        ItemRequest itemRequest = query
+                .setParameter("id", itemRequest1.getId())
+                .getSingleResult();
 
-        assertNotNull(resultRequest);
-        assertEquals(resultRequest, itemRequestDto);
-    }
-
-    @Test
-    void testFindByIdWrongUser() {
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.empty());
-        when(itemRequestRepository.findById(any()))
-                .thenReturn(Optional.ofNullable(itemRequest));
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemRequestService.findById(1L, 99L)
-        );
-
-        assertEquals(exception.getMessage(), "Пользователь не найден");
-    }
-
-    @Test
-    void testFindByIdWrongRequestId() {
-        when(userRepository.findById(any()))
-                .thenReturn(Optional.of(user));
-        when(itemRequestRepository.findById(any()))
-                .thenReturn(Optional.empty());
-
-        final NotFoundException exception = assertThrows(
-                NotFoundException.class,
-                () -> itemRequestService.findById(99L, 1L)
-        );
-
-        assertEquals(exception.getMessage(), "Запрос не найден");
+        assertThat(itemRequest.getId(), notNullValue());
+        assertThat(itemRequest.getDescription(), equalTo(itemRequest1.getDescription()));
+        assertThat(itemRequest.getRequesterId(), equalTo(itemRequest1.getRequesterId()));
     }
 }

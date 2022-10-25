@@ -1,13 +1,19 @@
 package ru.practicum.shareit.user.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 
 @Data
+@Builder
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -19,13 +25,4 @@ public class User {
     @Email
     @Column(unique = true)
     private String email;
-
-    public User(Long id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-    }
-
-    public User() {
-    }
 }
