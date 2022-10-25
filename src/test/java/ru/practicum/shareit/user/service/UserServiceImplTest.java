@@ -28,7 +28,7 @@ class UserServiceImplTest {
     @Test
     @DirtiesContext
     void testAdd() {
-        User user = User.builder().name("name").email("email@email.ru").build();
+        User user = User.builder().name("name").email("email51@email.ru").build();
         userService.add(user);
 
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
@@ -45,7 +45,7 @@ class UserServiceImplTest {
     @Test
     @DirtiesContext
     void testUpdate() {
-        User user = User.builder().name("name").email("email@email.ru").build();
+        User user = User.builder().name("name").email("email52@email.ru").build();
         Long id = userService.add(user).getId();
         User updatedUser = User.builder().name("updatedName").email("updatedEmail@email.ru").build();
         userService.update(updatedUser, id);
@@ -64,7 +64,7 @@ class UserServiceImplTest {
     @Test
     @DirtiesContext
     void testFindAll() {
-        User user = User.builder().name("name").email("email@email.ru").build();
+        User user = User.builder().name("name").email("email53@email.ru").build();
         userService.add(user);
 
         TypedQuery<User> query = em.createQuery("Select u from User u", User.class);
@@ -79,7 +79,7 @@ class UserServiceImplTest {
     @Test
     @DirtiesContext
     void testFindById() {
-        User user = User.builder().name("name").email("email@email.ru").build();
+        User user = User.builder().name("name").email("email54@email.ru").build();
         userService.add(user);
 
         TypedQuery<User> query = em.createQuery("Select u from User u where u.id = :id", User.class);
@@ -95,9 +95,9 @@ class UserServiceImplTest {
     @Test
     @DirtiesContext
     void testDelete() {
-        User user1 = User.builder().name("name1").email("email1@email.ru").build();
+        User user1 = User.builder().name("name1").email("email55@email.ru").build();
         userService.add(user1);
-        User user2 = User.builder().name("name2").email("email2@email.ru").build();
+        User user2 = User.builder().name("name2").email("email56@email.ru").build();
         userService.add(user2);
         userService.delete(user1.getId());
 

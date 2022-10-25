@@ -44,8 +44,8 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().withNano(0).plusSeconds(3L))
                 .itemId(1L)
                 .build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
-        userService.add(User.builder().name("booker").email("email1@email.ru").build());
+        userService.add(User.builder().name("name").email("email11@email.ru").build());
+        userService.add(User.builder().name("booker").email("email12@email.ru").build());
         itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
         bookingService.create(booking, 2L);
 
@@ -73,8 +73,8 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().withNano(0).plusSeconds(3L))
                 .itemId(1L)
                 .build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
-        userService.add(User.builder().name("booker").email("email1@email.ru").build());
+        userService.add(User.builder().name("name").email("email13@email.ru").build());
+        userService.add(User.builder().name("booker").email("email14@email.ru").build());
         itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
         bookingService.create(booking, 2L);
         bookingService.approve(1L, true, 1L);
@@ -109,8 +109,8 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().withNano(0).plusSeconds(5L))
                 .itemId(1L)
                 .build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
-        userService.add(User.builder().name("booker1").email("email1@email.ru").build());
+        userService.add(User.builder().name("name").email("email15@email.ru").build());
+        userService.add(User.builder().name("booker1").email("email16@email.ru").build());
         itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
         bookingService.create(booking1, 2L);
         bookingService.create(booking2, 2L);
@@ -147,9 +147,9 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().withNano(0).plusSeconds(5L))
                 .itemId(1L)
                 .build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
-        userService.add(User.builder().name("booker1").email("email1@email.ru").build());
-        userService.add(User.builder().name("booker2").email("email2@email.ru").build());
+        userService.add(User.builder().name("name").email("email17@email.ru").build());
+        userService.add(User.builder().name("booker1").email("email18@email.ru").build());
+        userService.add(User.builder().name("booker2").email("email19@email.ru").build());
         itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
         bookingService.create(booking1, 2L);
         bookingService.create(booking2, 3L);
@@ -188,9 +188,9 @@ class BookingServiceImplTest {
                 .end(LocalDateTime.now().withNano(0).plusSeconds(5L))
                 .itemId(1L)
                 .build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
-        userService.add(User.builder().name("booker1").email("email1@email.ru").build());
-        userService.add(User.builder().name("booker2").email("email2@email.ru").build());
+        userService.add(User.builder().name("name").email("email20@email.ru").build());
+        userService.add(User.builder().name("booker1").email("email21@email.ru").build());
+        userService.add(User.builder().name("booker2").email("email22@email.ru").build());
         itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
         itemIds.add(1L);
         bookingService.create(booking1, 2L);

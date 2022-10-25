@@ -32,7 +32,7 @@ class ItemRequestServiceImplTest {
     @DirtiesContext
     void testAdd() {
         ItemRequest itemRequest = ItemRequest.builder().description("description").build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
+        userService.add(User.builder().name("name").email("email41@email.ru").build());
         itemRequestService.add(itemRequest, 1L);
 
         TypedQuery<ItemRequest> query = em
@@ -51,8 +51,8 @@ class ItemRequestServiceImplTest {
     void testFindAllByRequester() {
         ItemRequest itemRequest1 = ItemRequest.builder().description("description1").build();
         ItemRequest itemRequest2 = ItemRequest.builder().description("description2").build();
-        userService.add(User.builder().name("name1").email("email1@email.ru").build());
-        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        userService.add(User.builder().name("name1").email("email43@email.ru").build());
+        userService.add(User.builder().name("name2").email("email42@email.ru").build());
         itemRequestService.add(itemRequest1, 1L);
         itemRequestService.add(itemRequest2, 2L);
 
@@ -73,7 +73,7 @@ class ItemRequestServiceImplTest {
     void testFindAll() {
         ItemRequest itemRequest1 = ItemRequest.builder().description("description1").build();
         ItemRequest itemRequest2 = ItemRequest.builder().description("description2").build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
+        userService.add(User.builder().name("name").email("email44@email.ru").build());
         itemRequestService.add(itemRequest1, 1L);
         itemRequestService.add(itemRequest2, 1L);
 
@@ -92,8 +92,8 @@ class ItemRequestServiceImplTest {
     void testFindById() {
         ItemRequest itemRequest1 = ItemRequest.builder().description("description1").build();
         ItemRequest itemRequest2 = ItemRequest.builder().description("description2").build();
-        userService.add(User.builder().name("name1").email("email1@email.ru").build());
-        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        userService.add(User.builder().name("name1").email("email45@email.ru").build());
+        userService.add(User.builder().name("name2").email("email46@email.ru").build());
         itemRequestService.add(itemRequest1, 1L);
         itemRequestService.add(itemRequest2, 2L);
 

@@ -39,7 +39,7 @@ class ItemServiceImplTest {
     @DirtiesContext
     void testAdd() {
         ItemDto item = ItemDto.builder().name("name").description("description").available(true).build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
+        userService.add(User.builder().name("name").email("email31@email.ru").build());
         itemService.add(item, 1L);
 
         TypedQuery<Item> query = em
@@ -62,7 +62,7 @@ class ItemServiceImplTest {
     void testUpdate() {
         ItemDto item = ItemDto.builder().name("name").description("description").available(true).build();
         ItemDto updatedItem = ItemDto.builder().name("updatedName").description("updatedDescription").available(true).build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
+        userService.add(User.builder().name("name").email("email32@email.ru").build());
         itemService.add(item, 1L);
         ItemDto result = itemService.update(updatedItem, 1L, 1L);
 
@@ -86,7 +86,7 @@ class ItemServiceImplTest {
     void testFindById() {
         ItemDto item1 = ItemDto.builder().name("name1").description("description1").available(true).build();
         ItemDto item2 = ItemDto.builder().name("name2").description("description2").available(true).build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
+        userService.add(User.builder().name("name").email("email33@email.ru").build());
         itemService.add(item1, 1L);
         itemService.add(item2, 1L);
 
@@ -110,8 +110,8 @@ class ItemServiceImplTest {
     void testFindAllByOwner() {
         ItemDto item1 = ItemDto.builder().name("name1").description("description1").available(true).build();
         ItemDto item2 = ItemDto.builder().name("name2").description("description2").available(true).build();
-        userService.add(User.builder().name("name1").email("email1@email.ru").build());
-        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        userService.add(User.builder().name("name1").email("email34@email.ru").build());
+        userService.add(User.builder().name("name2").email("email35@email.ru").build());
         itemService.add(item1, 1L);
         itemService.add(item2, 2L);
 
@@ -136,8 +136,8 @@ class ItemServiceImplTest {
     void testFindByText() {
         ItemDto item1 = ItemDto.builder().name("name1Text").description("description1").available(true).build();
         ItemDto item2 = ItemDto.builder().name("name2").description("description2Text").available(true).build();
-        userService.add(User.builder().name("name1").email("email1@email.ru").build());
-        userService.add(User.builder().name("name2").email("email2@email.ru").build());
+        userService.add(User.builder().name("name1").email("email36@email.ru").build());
+        userService.add(User.builder().name("name2").email("email37@email.ru").build());
         itemService.add(item1, 1L);
         itemService.add(item2, 2L);
 
@@ -163,8 +163,8 @@ class ItemServiceImplTest {
     @DirtiesContext
     void testAddComment() {
         Comment comment = Comment.builder().text("text").build();
-        userService.add(User.builder().name("name").email("email@email.ru").build());
-        userService.add(User.builder().name("booker").email("email1@email.ru").build());
+        userService.add(User.builder().name("name").email("email39@email.ru").build());
+        userService.add(User.builder().name("booker").email("email38@email.ru").build());
         itemService.add(ItemDto.builder().name("name").description("description").available(true).build(), 1L);
         bookingService.create(Booking
                         .builder()
