@@ -3,7 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -36,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto add(ItemDto itemDto, Long userId) {
-        itemValidation.itemDbValidation(itemMapper.fromItemDto(itemDto), userId);
+        itemValidation.itemValidation(itemMapper.fromItemDto(itemDto), userId);
         itemDto.setOwner(userId);
         log.info("Вещь успешно добавлена");
         return itemMapper.toItemDto(itemRepository.save(itemMapper.fromItemDto(itemDto)));
@@ -47,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
         itemValidation.itemIdValidation(itemId);
         Item oldItem = itemRepository.findById(itemId).get();
         if (!oldItem.getOwner().equals(userId)) {
-            throw new UserNotFoundException("Пользователь не является владельцем");
+            throw new NotFoundException("Пользователь не является владельцем");
         }
         Item updatedItem = new Item();
         updatedItem.setId(itemId);

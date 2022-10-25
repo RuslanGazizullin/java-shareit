@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.validation.BookingValidation;
-import ru.practicum.shareit.exception.BookingValidationException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 
 import java.time.LocalDateTime;
@@ -46,8 +45,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto approve(Long bookingId, boolean approved, Long ownerId) {
-        bookingValidation.bookingBookerValidation(bookingId, ownerId);
         bookingValidation.bookingIdValidation(bookingId);
+        bookingValidation.bookingBookerValidation(bookingId, ownerId);
         Booking booking = bookingRepository.findById(bookingId).get();
         bookingValidation.bookingOwnerValidation(bookingId, ownerId);
         bookingValidation.approveStatusValidation(bookingId);
@@ -127,9 +126,7 @@ public class BookingServiceImpl implements BookingService {
         bookingValidation.bookingStateValidation(bookingState);
         final LocalDateTime presentTime = LocalDateTime.now();
         List<Long> itemsId = itemRepository.findAllIdByOwner(ownerId);
-        if (itemsId.size() == 0) {
-            throw new BookingValidationException("У владельца нет ни одной вещи");
-        }
+        bookingValidation.itemIdValidation(itemsId);
         log.info("Список бронирований успешно получен");
         if (from == null || size == null) {
             switch (bookingState) {

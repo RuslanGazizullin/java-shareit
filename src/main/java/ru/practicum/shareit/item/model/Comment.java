@@ -18,4 +18,15 @@ public class Comment {
     private Long itemId;
     @Column
     private Long authorId;
+
+    public Comment(Long id, String text, Long itemId, Long authorId) {
+        this.id = id;
+        this.text = text;
+        this.itemId = itemId;
+        this.authorId = authorId;
+    }
+
+    public Comment() {
+
+    }
 }

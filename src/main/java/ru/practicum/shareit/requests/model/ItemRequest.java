@@ -16,4 +16,13 @@ public class ItemRequest {
     private String description;
     @Column
     private Long requesterId;
+
+    public ItemRequest() {
+    }
+
+    public ItemRequest(Long id, String description, Long requesterId) {
+        this.id = id;
+        this.description = description;
+        this.requesterId = requesterId;
+    }
 }
