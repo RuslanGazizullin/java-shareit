@@ -17,12 +17,12 @@ import javax.validation.constraints.Email;
 public class User {
 
     @Id
-    @Column
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(name = "name")
     private String name;
     @Email
-    @Column(unique = true)
+    @Column(name = "email", unique = true)
     private String email;
 }

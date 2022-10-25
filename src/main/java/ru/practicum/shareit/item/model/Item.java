@@ -15,12 +15,12 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class Item {
     @Id
-    @Column
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(name = "name")
     private String name;
-    @Column
+    @Column(name = "description")
     private String description;
     @Column(name = "is_available")
     private Boolean available;

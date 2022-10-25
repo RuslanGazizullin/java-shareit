@@ -37,6 +37,7 @@ class UserServiceImplTest {
                 .getSingleResult();
 
         assertThat(user1.getId(), notNullValue());
+        assertThat(user1.getId(), equalTo(1L));
         assertThat(user1.getName(), equalTo(user.getName()));
         assertThat(user1.getEmail(), equalTo(user.getEmail()));
     }
@@ -44,19 +45,20 @@ class UserServiceImplTest {
     @Test
     @DirtiesContext
     void testUpdate() {
-        User user0 = User.builder().name("name").email("email@email.ru").build();
-        userService.add(user0);
-        User user = User.builder().id(1L).name("updatedName").email("updatedEmail@email.ru").build();
-        userService.update(user, user.getId());
+        User user = User.builder().name("name").email("email@email.ru").build();
+        Long id = userService.add(user).getId();
+        User updatedUser = User.builder().name("updatedName").email("updatedEmail@email.ru").build();
+        userService.update(updatedUser, id);
 
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
-        User user1 = query
-                .setParameter("email", user.getEmail())
+        User result = query
+                .setParameter("email", updatedUser.getEmail())
                 .getSingleResult();
 
-        assertThat(user1.getId(), notNullValue());
-        assertThat(user1.getName(), equalTo(user.getName()));
-        assertThat(user1.getEmail(), equalTo(user.getEmail()));
+        assertThat(result.getId(), notNullValue());
+        assertThat(result.getId(), equalTo(1L));
+        assertThat(result.getName(), equalTo(updatedUser.getName()));
+        assertThat(result.getEmail(), equalTo(updatedUser.getEmail()));
     }
 
     @Test

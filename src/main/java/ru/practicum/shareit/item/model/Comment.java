@@ -15,13 +15,13 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class Comment {
     @Id
-    @Column
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(name = "text")
     private String text;
-    @Column
+    @Column(name = "item_id")
     private Long itemId;
-    @Column
+    @Column(name = "author_id")
     private Long authorId;
 }

@@ -15,11 +15,11 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class ItemRequest {
     @Id
-    @Column
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(name = "description")
     private String description;
-    @Column
+    @Column(name = "requester_id")
     private Long requesterId;
 }
