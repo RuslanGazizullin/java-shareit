@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.notNullValue;
         properties = "db.name=test",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ItemRequestServiceImplTest {
 
     private final EntityManager em;
