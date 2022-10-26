@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -8,7 +10,6 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.validation.BookingValidation;
-import ru.practicum.shareit.exception.BookingValidationException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 
 import java.time.LocalDateTime;
@@ -44,8 +45,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto approve(Long bookingId, boolean approved, Long ownerId) {
-        bookingValidation.bookingBookerValidation(bookingId, ownerId);
         bookingValidation.bookingIdValidation(bookingId);
+        bookingValidation.bookingBookerValidation(bookingId, ownerId);
         Booking booking = bookingRepository.findById(bookingId).get();
         bookingValidation.bookingOwnerValidation(bookingId, ownerId);
         bookingValidation.approveStatusValidation(bookingId);
@@ -68,23 +69,29 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> findAllByBooker(Long bookerId, String bookingState) {
+    public List<BookingDto> findAllByBooker(Long bookerId, String bookingState, Integer from, Integer size) {
         bookingValidation.bookerIdValidation(bookerId);
         bookingValidation.bookingStateValidation(bookingState);
         final LocalDateTime presentTime = LocalDateTime.now();
         log.info("Список бронирований успешно получен");
+        int page = from / size;
         switch (bookingState) {
             case "ALL":
-                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId));
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId,
+                        PageRequest.of(page, size, Sort.by("start").descending())).toList());
             case "FUTURE":
-                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndStartAfter(bookerId, presentTime));
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndStartAfter(bookerId,
+                        presentTime, PageRequest.of(page, size, Sort.by("start").descending())).toList());
             case "PAST":
-                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndEndBefore(bookerId, presentTime));
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerIdAndEndBefore(bookerId,
+                        presentTime, PageRequest.of(page, size, Sort.by("start").descending())).toList());
             case "CURRENT":
                 return toBookingDtoSortedByTime(bookingRepository
-                        .findAllByBookerIdAndStartBeforeAndEndAfter(bookerId, presentTime, presentTime));
+                        .findAllByBookerIdAndStartBeforeAndEndAfter(bookerId, presentTime, presentTime,
+                                PageRequest.of(page, size, Sort.by("start").descending())).toList());
             default:
-                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId)
+                return toBookingDtoSortedByTime(bookingRepository.findAllByBookerId(bookerId,
+                                PageRequest.of(page, size, Sort.by("start").descending()))
                         .stream()
                         .filter(booking -> booking.getStatus().name().equals(bookingState))
                         .collect(Collectors.toList()));
@@ -92,39 +99,43 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> findAllByOwner(Long ownerId, String bookingState) {
+    public List<BookingDto> findAllByOwner(Long ownerId, String bookingState, Integer from, Integer size) {
         bookingValidation.bookerIdValidation(ownerId);
         bookingValidation.bookingStateValidation(bookingState);
         final LocalDateTime presentTime = LocalDateTime.now();
         List<Long> itemsId = itemRepository.findAllIdByOwner(ownerId);
-        if (itemsId.size() == 0) {
-            throw new BookingValidationException("У владельца нет ни одной вещи");
-        }
+        bookingValidation.itemIdValidation(itemsId);
         log.info("Список бронирований успешно получен");
+        int page = from / size;
         switch (bookingState) {
             case "ALL":
-                return toBookingDtoSortedByTime(bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository
+                        .findAll(PageRequest.of(page, size, Sort.by("start").descending()))
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
                         .collect(Collectors.toList()));
             case "FUTURE":
-                return toBookingDtoSortedByTime(bookingRepository.findAllByStartAfter(presentTime)
+                return toBookingDtoSortedByTime(bookingRepository
+                        .findAllByStartAfter(presentTime, PageRequest.of(page, size, Sort.by("start").descending()))
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
                         .collect(Collectors.toList()));
             case "PAST":
-                return toBookingDtoSortedByTime(bookingRepository.findAllByEndBefore(presentTime)
+                return toBookingDtoSortedByTime(bookingRepository
+                        .findAllByEndBefore(presentTime, PageRequest.of(page, size, Sort.by("start").descending()))
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
                         .collect(Collectors.toList()));
             case "CURRENT":
                 return toBookingDtoSortedByTime(bookingRepository
-                        .findAllByStartBeforeAndEndAfter(presentTime, presentTime)
+                        .findAllByStartBeforeAndEndAfter(presentTime, presentTime,
+                                PageRequest.of(page, size, Sort.by("start").descending()))
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
                         .collect(Collectors.toList()));
             default:
-                return toBookingDtoSortedByTime(bookingRepository.findAll()
+                return toBookingDtoSortedByTime(bookingRepository
+                        .findAll(PageRequest.of(page, size, Sort.by("start").descending()))
                         .stream()
                         .filter(booking -> itemsId.contains(booking.getItemId()))
                         .filter(booking -> booking.getStatus().name().equals(bookingState))

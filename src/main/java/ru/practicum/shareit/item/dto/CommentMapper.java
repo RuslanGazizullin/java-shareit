@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
+
 @Component
 public class CommentMapper {
 
@@ -18,7 +20,7 @@ public class CommentMapper {
                 comment.getId(),
                 comment.getText(),
                 userRepository.findById(comment.getAuthorId()).get().getName(),
-                true
+                LocalDateTime.now().withNano(0)
         );
     }
 }

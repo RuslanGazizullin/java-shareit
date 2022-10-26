@@ -12,24 +12,10 @@ import ru.practicum.shareit.exception.*;
 public class ErrorHandler {
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleUserValidation(final UserValidationException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Exception e) {
         log.warn("Произошла непредвиденная ошибка");
         return new ErrorResponse("Произошла непредвиденная ошибка:" + e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleDuplicateEmail(final DuplicateEmailException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
@@ -40,43 +26,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFound(final UserNotFoundException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleItemRequestValidation(final ItemRequestValidationException e) {
+    public ErrorResponse handleValidation(final ValidationException e) {
         log.warn(e.getMessage());
         return new ErrorResponse((e.getMessage()));
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleItemNotFound(final ItemNotFoundException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse((e.getMessage()));
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBookingValidation(final BookingValidationException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse((e.getMessage()));
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleBookingNotFound(final BookingNotFoundException e) {
-        log.warn(e.getMessage());
-        return new ErrorResponse((e.getMessage()));
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleCommentValidation(final CommentValidationException e) {
+    public ErrorResponse handleNotFound(final NotFoundException e) {
         log.warn(e.getMessage());
         return new ErrorResponse((e.getMessage()));
     }

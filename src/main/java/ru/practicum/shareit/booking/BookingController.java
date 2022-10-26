@@ -1,12 +1,16 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping(path = "/bookings")
 public class BookingController {
@@ -35,13 +39,17 @@ public class BookingController {
 
     @GetMapping()
     public List<BookingDto> findAllByBooker(@RequestHeader("X-Sharer-User-Id") Long bookerId,
-                                            @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.findAllByBooker(bookerId, state);
+                                            @RequestParam(defaultValue = "ALL") String state,
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                            @RequestParam(defaultValue = "10") @Positive Integer size) {
+        return bookingService.findAllByBooker(bookerId, state, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> findAllByOwner(@RequestHeader("X-Sharer-User-Id") Long ownerId,
-                                           @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.findAllByOwner(ownerId, state);
+                                           @RequestParam(defaultValue = "ALL") String state,
+                                           @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                           @RequestParam(defaultValue = "10") @Positive Integer size) {
+        return bookingService.findAllByOwner(ownerId, state, from, size);
     }
 }

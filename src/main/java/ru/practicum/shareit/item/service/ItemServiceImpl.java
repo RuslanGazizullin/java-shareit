@@ -1,8 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.UserNotFoundException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -35,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto add(ItemDto itemDto, Long userId) {
-        itemValidation.itemDbValidation(itemMapper.fromItemDto(itemDto), userId);
+        itemValidation.itemValidation(itemMapper.fromItemDto(itemDto), userId);
         itemDto.setOwner(userId);
         log.info("Вещь успешно добавлена");
         return itemMapper.toItemDto(itemRepository.save(itemMapper.fromItemDto(itemDto)));
@@ -46,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
         itemValidation.itemIdValidation(itemId);
         Item oldItem = itemRepository.findById(itemId).get();
         if (!oldItem.getOwner().equals(userId)) {
-            throw new UserNotFoundException("Пользователь не является владельцем");
+            throw new NotFoundException("Пользователь не является владельцем");
         }
         Item updatedItem = new Item();
         updatedItem.setId(itemId);
@@ -62,9 +63,9 @@ public class ItemServiceImpl implements ItemService {
             updatedItem.setDescription(itemDto.getDescription());
         }
         if (itemDto.getAvailable() == null) {
-            updatedItem.setIsAvailable(oldItem.getIsAvailable());
+            updatedItem.setAvailable(oldItem.getAvailable());
         } else {
-            updatedItem.setIsAvailable(itemDto.getAvailable());
+            updatedItem.setAvailable(itemDto.getAvailable());
         }
         itemRepository.save(updatedItem);
         log.info("Данные о вещи успешно обновлены");
@@ -79,23 +80,23 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingDto> findAllByOwner(Long userId) {
+    public List<ItemWithBookingDto> findAllByOwner(Long userId, Integer from, Integer size) {
         log.info("Список вещей пользователя успешно сформирован");
-        return itemRepository.findAllByOwner(userId)
+        return itemRepository.findAllByOwner(userId, PageRequest.of(from / size, size))
                 .stream()
                 .map(item -> itemMapper.toItemWithBookingDto(item, userId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> findByText(String text) {
+    public List<ItemDto> findByText(String text, Integer from, Integer size) {
         log.info("Список доступных для аренды вещей успешно сформирован");
         if (text.isBlank()) {
             return new ArrayList<>();
         } else {
-            return itemRepository.findByText(text)
+            return itemRepository.findByText(text, PageRequest.of(from / size, size))
                     .stream()
-                    .filter(Item -> Item.getIsAvailable().equals(true))
+                    .filter(Item -> Item.getAvailable().equals(true))
                     .map(itemMapper::toItemDto)
                     .collect(Collectors.toList());
         }

@@ -30,7 +30,7 @@ public class ItemMapper {
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
-                .available(item.getIsAvailable())
+                .available(item.getAvailable())
                 .owner(item.getOwner())
                 .requestId(item.getRequestId())
                 .build();
@@ -41,7 +41,7 @@ public class ItemMapper {
                 .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
-                .isAvailable(itemDto.getAvailable())
+                .available(itemDto.getAvailable())
                 .owner(itemDto.getOwner())
                 .requestId(itemDto.getRequestId())
                 .build();
@@ -54,26 +54,28 @@ public class ItemMapper {
                         .id(item.getId())
                         .name(item.getName())
                         .description(item.getDescription())
-                        .available(item.getIsAvailable())
+                        .available(item.getAvailable())
                         .lastBooking(lastBooking(item.getId()).get(0))
                         .nextBooking(nextBooking(item.getId()).get(0))
                         .comments(commentRepository.findAllByItemId(item.getId())
                                 .stream()
                                 .map(commentMapper::toCommentDto)
                                 .collect(Collectors.toList()))
+                        .requestId(item.getRequestId())
                         .build();
             } else {
                 return ItemWithBookingDto.builder()
                         .id(item.getId())
                         .name(item.getName())
                         .description(item.getDescription())
-                        .available(item.getIsAvailable())
+                        .available(item.getAvailable())
                         .lastBooking(null)
                         .nextBooking(null)
                         .comments(commentRepository.findAllByItemId(item.getId())
                                 .stream()
                                 .map(commentMapper::toCommentDto)
                                 .collect(Collectors.toList()))
+                        .requestId(item.getRequestId())
                         .build();
             }
         } else {
@@ -81,13 +83,14 @@ public class ItemMapper {
                     .id(item.getId())
                     .name(item.getName())
                     .description(item.getDescription())
-                    .available(item.getIsAvailable())
+                    .available(item.getAvailable())
                     .lastBooking(null)
                     .nextBooking(null)
                     .comments(commentRepository.findAllByItemId(item.getId())
                             .stream()
                             .map(commentMapper::toCommentDto)
                             .collect(Collectors.toList()))
+                    .requestId(item.getRequestId())
                     .build();
         }
     }
