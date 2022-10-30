@@ -296,17 +296,6 @@ class ItemServiceTest {
     }
 
     @Test
-    void testFindByTextBlank() {
-        itemPage = new PageImpl<>(Collections.emptyList());
-        when(itemRepository.findByText(any(), any(Pageable.class)))
-                .thenReturn(itemPage);
-
-        List<ItemDto> resultItems = itemService.findByText("", 0, 1);
-
-        assertEquals(resultItems.size(), 0);
-    }
-
-    @Test
     void testAddComment() {
         bookings.add(booking);
         when(commentRepository.save(comment))

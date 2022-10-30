@@ -26,7 +26,7 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<Object> createBooking(@RequestHeader("X-Sharer-User-Id") long userId,
                                                 @RequestBody @Valid Booking bookingDto) {
-        if (bookingDto.getEnd().isBefore(bookingDto.getStart())) {
+        if (!bookingDto.getEnd().isAfter(bookingDto.getStart())) {
             throw new ValidationException("End before start");
         }
         log.info("Creating booking {}, userId={}", bookingDto, userId);

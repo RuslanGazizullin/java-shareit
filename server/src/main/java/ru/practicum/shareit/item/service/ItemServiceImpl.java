@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.validation.ItemValidation;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,15 +82,11 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> findByText(String text, Integer from, Integer size) {
         log.info("Get items by text={}, from={}, size={}", text, from, size);
-        if (text.isBlank()) {
-            return new ArrayList<>();
-        } else {
-            return itemRepository.findByText(text, PageRequest.of(from / size, size))
-                    .stream()
-                    .filter(Item -> Item.getAvailable().equals(true))
-                    .map(itemMapper::toItemDto)
-                    .collect(Collectors.toList());
-        }
+        return itemRepository.findByText(text, PageRequest.of(from / size, size))
+                .stream()
+                .filter(Item -> Item.getAvailable().equals(true))
+                .map(itemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override

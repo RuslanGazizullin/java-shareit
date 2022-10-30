@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.item.dto.UpdatedItem;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.util.Collections;
 
 @Controller
 @RequestMapping(path = "/items")
@@ -55,6 +57,10 @@ public class ItemController {
                                                      @RequestHeader("X-Sharer-User-Id") long userId,
                                                      @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                      @RequestParam(defaultValue = "10") @Positive Integer size) {
+        if (text.isBlank()) {
+            log.info("Get empty items list by blank text");
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
+        }
         log.info("Get items by text={}, from={}, size={}", text, from, size);
         return itemClient.getAllItemsByText(text, userId, from, size);
     }
